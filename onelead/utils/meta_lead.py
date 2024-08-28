@@ -6,7 +6,7 @@ import time
 from werkzeug.wrappers import Response
 import frappe.utils
 
-
+@frappe.whitelist(allow_guest=True)
 def webhook():
   """ Meta Ads Webhook """
   if frappe.request.method == "GET":
@@ -27,7 +27,8 @@ def validate():
 	return Response(hub_challenge, status=200)
 
 def leadgen():
-  data = frappe.local.form_dict
+  # data = frappe.local.form_dict
+  data = frappe.request.json
   frappe.logger().info("Facebook request body: {}".format(json.dumps(data)))
   # frappe.get_doc({
   #   "doctype": "Webhook Logs FB",
