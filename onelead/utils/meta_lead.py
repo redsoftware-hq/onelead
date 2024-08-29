@@ -17,11 +17,10 @@ def webhook():
 def validate():
 	"""Validate connection by webhook token verification"""
 	hub_challenge = frappe.form_dict.get("hub.challenge")
-	# webhook_verify_token = frappe.db.get_single_value(
-	# 	"Messenger Config", "webhook_verify_token"
-	# )
-
-	if frappe.form_dict.get("hub.verify_token") != "webhook_verify_token":
+	webhook_verify_token = frappe.db.get_single_value(
+		"Messenger Config", "webhook_verify_token"
+	)
+	if frappe.form_dict.get("hub.verify_token") != webhook_verify_token:
 		frappe.throw("Verify token does not match")
 
 	return Response(hub_challenge, status=200)
@@ -30,6 +29,8 @@ def leadgen():
   # data = frappe.local.form_dict
   data = frappe.request.json
   frappe.logger().info("Facebook request body: {}".format(json.dumps(data)))
+  process_lead_changes(data)
+  return {"status": "success"}
   # frappe.get_doc({
   #   "doctype": "Webhook Logs FB",
   #   "json_data": json.dumps(data)
@@ -46,7 +47,8 @@ def process_lead_changes(data):
 
 
 def fetch_lead_data(leadgen_id):
-    conf = frappe.get_conf()
+    conf = frappe.get_doc("Messenger Config")
+
     print("FETCH LEAD DATA....")
     url = f"https://graph.facebook.com/v11.0/{leadgen_id}"
     params = {"access_token": conf.access_token}
