@@ -28,13 +28,13 @@ def validate():
 def leadgen():
   # data = frappe.local.form_dict
   data = frappe.request.json
+  frappe.get_doc({
+    "doctype": "Meta Lead Logs",
+    "json": json.dumps(data)
+  }).insert(ignore_permissions=True)
   frappe.logger().info("Facebook request body: {}".format(json.dumps(data)))
   process_lead_changes(data)
-  return {"status": "success"}
-  # frappe.get_doc({
-  #   "doctype": "Webhook Logs FB",
-  #   "json_data": json.dumps(data)
-  # }).insert(ignore_permissions=True)
+  return
 
 def process_lead_changes(data):
     if "entry" in data:
@@ -50,16 +50,16 @@ def fetch_lead_data(leadgen_id):
     conf = frappe.get_doc("Messenger Config")
 
     print("FETCH LEAD DATA....")
-    url = f"https://graph.facebook.com/v11.0/{leadgen_id}"
+    url = f"https://graph.facebook.com/v20.0/{leadgen_id}"
     params = {"access_token": conf.access_token}
     response = requests.get(url, params=params)
     print("RESPONSE", response)
     if response.status_code == 200:
         lead_data = response.json()
-        process_lead_data(lead_data , conf.api_key, conf.api_secret)
+        process_lead_data(lead_data)
 
 
-def process_lead_data(lead_data, api_key, api_secret):
+def process_lead_data(lead_data):
     field_data = lead_data.get("field_data", [])
     lead_info = {field["name"]: field["values"][0] for field in field_data}
     print(lead_info)
