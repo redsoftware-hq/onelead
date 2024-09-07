@@ -36,6 +36,7 @@ def handle_lead():
   return Response("Error occured in google leads webhook", status=400, content_type="text/plain")
 
 def validate_request(data):
+  # TODO: Check if it's possible to add meta config read only fields to meta ad config.
   config = frappe.get_all('Google Ad Campaign Config', filters={'campaign_id': data.get("campaign_id")}, limit_page_length=1)
   if not config or len(config) == 0:
     frappe.logger().error(f"Google Lead webhook request: NO CONFIG DEFINED FOR campaign_ID {data.get('campaign_id')}")
