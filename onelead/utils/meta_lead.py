@@ -4,13 +4,26 @@ import requests
 import time
 from werkzeug.wrappers import Response
 import frappe.utils
+from hashlib import sha1
+import hmac
 
 @frappe.whitelist(allow_guest=True)
 def webhook():
   """ Meta Ads Webhook """
+  print("Entry....")
   if frappe.request.method == "GET":
-    return validate()
-  return leadgen()
+    validate()
+  elif frappe.request.method == "POST":
+    calculated_signature = calculate_signature(frappe.request.get_data())
+    print("Calculated Signature: sha1=" + calculated_signature)
+    
+    if not verify_signature(frappe.request, "sha1=" + calculated_signature):
+      return "Invalid signature", 401
+    leadgen()
+  
+  # if frappe.request.method == "GET":
+    # return validate()
+  # return leadgen()
 
 def validate():
   """Validate connection by webhook token verification"""
@@ -53,6 +66,21 @@ def leadgen():
   except Exception as e:
     frappe.logger().error(f"Error in processing lead: {str(e)}", exc_info=True)
     return Response(f"Error in processing lead: {str(e)}", status=500)
+
+def calculate_signature(payload):
+    app_secret = frappe.conf.facebook_app_secret
+    mac = hmac.new(bytes(app_secret, 'utf-8'), msg=payload, digestmod=sha1)
+    return mac.hexdigest()
+
+def verify_signature(request, calculated_signature):
+    signature = calculated_signature
+    print(signature)
+    if not signature:
+        return False
+
+    sha_name, signature = signature.split('=')
+    mac = hmac.new(bytes(frappe.conf.facebook_app_secret, 'utf-8'), msg=request.get_data(), digestmod=sha1)
+    return hmac.compare_digest(mac.hexdigest(), signature)
 
 def process_lead_changes(data):
   try:
