@@ -20,6 +20,7 @@ def webhook():
     if not verify_signature(frappe.request, "sha1=" + calculated_signature):
       return "Invalid signature", 401
     leadgen()
+    return 
   
   # if frappe.request.method == "GET":
     # return validate()

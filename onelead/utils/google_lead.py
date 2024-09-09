@@ -45,7 +45,7 @@ def validate_request(data):
   config = frappe.get_doc('Google Ad Campaign Config', config[0]['name'])
 
   GOOGLE_LEAD_KEY = config.get('webhook_key')
-  if data.get("Google_key") != GOOGLE_LEAD_KEY:
+  if data.get("google_key") != GOOGLE_LEAD_KEY:
     frappe.logger().error("Google Lead webhook request: WEBHOOK KEY DOES NOT MATCH !")
     return False
   return config
