@@ -6,16 +6,16 @@ from werkzeug.wrappers import Response
 import frappe.utils
 from hashlib import sha1
 import hmac
+from frappe.utils.password import get_decrypted_password
 
 @frappe.whitelist(allow_guest=True)
 def webhook():
   """ Meta Ads Webhook """
-  print("Entry....")
   if frappe.request.method == "GET":
     validate()
   elif frappe.request.method == "POST":
     calculated_signature = calculate_signature(frappe.request.get_data())
-    print("Calculated Signature: sha1=" + calculated_signature)
+    # print("Calculated Signature: sha1=" + calculated_signature)
     
     if not verify_signature(frappe.request, "sha1=" + calculated_signature):
       return "Invalid signature", 401
@@ -75,7 +75,7 @@ def calculate_signature(payload):
 
 def verify_signature(request, calculated_signature):
     signature = calculated_signature
-    print(signature)
+    # print(signature)
     if not signature:
         return False
 
@@ -119,8 +119,8 @@ def fetch_lead_data(leadgen_id, lead_conf):
   try:
     conf = frappe.get_doc("Meta Webhook Config")
     url = f"{conf.meta_url}/{conf.meta_api_version}/{leadgen_id}"
-    params = {"access_token": conf.access_token}
-
+    access_token = get_decrypted_password("Meta Webhook Config", conf.name, "access_token")
+    params = {"access_token": access_token}
     frappe.logger().info(f"Fetching lead data from Meta API for leadgen_id: {leadgen_id}")
     response = requests.get(url, params=params)
 
