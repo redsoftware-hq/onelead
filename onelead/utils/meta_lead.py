@@ -152,7 +152,10 @@ def process_lead_data(lead_data, lead_conf):
       lead_doc_field = mapping.lead_doctype_field
 
       if ad_form_key in wb_lead_info:
-        new_lead.set(lead_doc_field, wb_lead_info.get(ad_form_key))
+        ad_form_value = wb_lead_info.get(ad_form_key)
+        if ad_form_key == "phone_number":
+          ad_form_value = formate_phone_number(wb_lead_info.get(ad_form_key))
+        new_lead.set(lead_doc_field, ad_form_value)
 
     for constant in lead_conf.constants:
       new_lead.set(constant.lead_doctype_field, constant.constant_value)
@@ -167,7 +170,14 @@ def process_lead_data(lead_data, lead_conf):
     frappe.logger().error(f"Error in processing lead data: {str(e)}", exc_info=True)
     raise
 
-	
+
+def formate_phone_number(phone_number):
+    if phone_number and phone_number.startswith("+"):
+        phone_number = phone_number.replace(" ", "").replace("-", "")
+        return f"{phone_number[:3]}-{phone_number[3:]}"
+    else:
+        return phone_number
+
 # def process_lead_data(lead_data, lead_conf):
 #   field_data = lead_data.get("field_data", [])
 #   new_lead = frappe.new_doc(lead_conf.get('lead_doctype'))
