@@ -90,15 +90,26 @@ def process_lead_changes(data):
         if "changes" in entry:
           for change in entry["changes"]:
             if change["field"] == "leadgen":
-              leadgen_id = change["value"]["leadgen_id"]
-              ad_id = change["value"]["ad_id"]
-              lead_conf = frappe.get_all('Meta Ad Campaign Config', filters={'ad_group_id': change["value"]["adgroup_id"]}, limit_page_length=1)
+              leadgen_id = change["value"].get("leadgen_id")              
+              adgroup_id = change["value"].get("adgroup_id")
+              page_id = change["value"].get("page_id")
               
-              if lead_conf:
-                frappe.logger().info(f"Lead configuration found for adgroup_id: {change['value']['adgroup_id']}")
+              lead_conf = None 
+
+              if adgroup_id or page_id:
+                  filters = {}
+                  if adgroup_id:
+                      filters['ad_group_id'] = adgroup_id
+                  if page_id:
+                      filters['page_id'] = page_id
+              
+              lead_conf = frappe.get_all('Meta Ad Campaign Config', filters=filters, limit_page_length=1)
+
+              if lead_conf and leadgen_id:
+                frappe.logger().info(f"Lead configuration found for unique key: {adgroup_id or page_id}")
                 fetch_lead_data(leadgen_id, lead_conf)
               else:
-                frappe.logger().error(f"No lead configuration found for adgroup_id: {change['value']['adgroup_id']}")
+                frappe.logger().error(f"No lead configuration found for unique key: {adgroup_id or page_id}")
 
   except Exception as e:
     frappe.logger().error(f"Error in processing lead changes: {str(e)}", exc_info=True)

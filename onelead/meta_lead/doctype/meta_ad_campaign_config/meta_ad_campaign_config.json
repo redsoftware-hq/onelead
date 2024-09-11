@@ -8,6 +8,7 @@
   "ad_details_section",
   "ad_group_id",
   "ad_group_name",
+  "page_id",
   "ad_x_lead_mapping_section",
   "lead_doctype",
   "mapping",
@@ -68,11 +69,16 @@
    "fieldtype": "Table",
    "label": "Constants",
    "options": "Lead Constant Field Mapping"
+  },
+  {
+   "fieldname": "page_id",
+   "fieldtype": "Data",
+   "label": "Page ID"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-07 00:52:11.344536",
+ "modified": "2024-09-11 23:54:46.377366",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ad Campaign Config",
