@@ -105,9 +105,9 @@ def process_lead_changes(data):
               
               lead_conf = frappe.get_all('Meta Ad Campaign Config', filters=filters, limit_page_length=1)
 
-              if lead_conf and leadgen_id:
+              if lead_conf and len(lead_conf) > 0 and leadgen_id:
                 frappe.logger().info(f"Lead configuration found for unique key: {adgroup_id or page_id}")
-                fetch_lead_data(leadgen_id, lead_conf)
+                fetch_lead_data(leadgen_id, lead_conf[0])
               else:
                 frappe.logger().error(f"No lead configuration found for unique key: {adgroup_id or page_id}")
 
