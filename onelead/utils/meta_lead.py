@@ -14,11 +14,11 @@ def webhook():
   if frappe.request.method == "GET":
     validate()
   elif frappe.request.method == "POST":
-    calculated_signature = calculate_signature(frappe.request.get_data())
-    # print("Calculated Signature: sha1=" + calculated_signature)
+    # calculated_signature = calculate_signature(frappe.request.get_data())
+    # # print("Calculated Signature: sha1=" + calculated_signature)
     
-    if not verify_signature(frappe.request, "sha1=" + calculated_signature):
-      return "Invalid signature", 401
+    # if not verify_signature(frappe.request, "sha1=" + calculated_signature):
+    #   return "Invalid signature", 401
     leadgen()
     return 
   
@@ -68,20 +68,20 @@ def leadgen():
     frappe.logger().error(f"Error in processing lead: {str(e)}", exc_info=True)
     return Response(f"Error in processing lead: {str(e)}", status=500)
 
-def calculate_signature(payload):
-    app_secret = frappe.conf.facebook_app_secret
-    mac = hmac.new(bytes(app_secret, 'utf-8'), msg=payload, digestmod=sha1)
-    return mac.hexdigest()
+# def calculate_signature(payload):
+#     app_secret = frappe.conf.facebook_app_secret
+#     mac = hmac.new(bytes(app_secret, 'utf-8'), msg=payload, digestmod=sha1)
+#     return mac.hexdigest()
 
-def verify_signature(request, calculated_signature):
-    signature = calculated_signature
-    # print(signature)
-    if not signature:
-        return False
+# def verify_signature(request, calculated_signature):
+#     signature = calculated_signature
+#     # print(signature)
+#     if not signature:
+#         return False
 
-    sha_name, signature = signature.split('=')
-    mac = hmac.new(bytes(frappe.conf.facebook_app_secret, 'utf-8'), msg=request.get_data(), digestmod=sha1)
-    return hmac.compare_digest(mac.hexdigest(), signature)
+#     sha_name, signature = signature.split('=')
+#     mac = hmac.new(bytes(frappe.conf.facebook_app_secret, 'utf-8'), msg=request.get_data(), digestmod=sha1)
+#     return hmac.compare_digest(mac.hexdigest(), signature)
 
 def process_lead_changes(data):
   try:
@@ -106,8 +106,11 @@ def process_lead_changes(data):
               lead_conf = frappe.get_all('Meta Ad Campaign Config', filters=filters, limit_page_length=1)
 
               if lead_conf and len(lead_conf) > 0 and leadgen_id:
+
+                # Call and fetch doc data again, to fetch all child table data as well.
+                config = frappe.get_doc('Meta Ad Campaign Config', lead_conf[0]['name'])
                 frappe.logger().info(f"Lead configuration found for unique key: {adgroup_id or page_id}")
-                fetch_lead_data(leadgen_id, lead_conf[0])
+                fetch_lead_data(leadgen_id, config)
               else:
                 frappe.logger().error(f"No lead configuration found for unique key: {adgroup_id or page_id}")
 
@@ -142,7 +145,8 @@ def fetch_lead_data(leadgen_id, lead_conf):
 def process_lead_data(lead_data, lead_conf):
   try:
     field_data = lead_data.get("field_data", [])
-    new_lead = frappe.new_doc(lead_conf.get('lead_doctype'))
+    lead_doctype = lead_conf.get('lead_doctype')
+    new_lead = frappe.new_doc(lead_doctype)
     wb_lead_info = {field["name"]: field["values"][0] for field in field_data}
 
     frappe.logger().info(f"Processing lead data: {wb_lead_info}")
