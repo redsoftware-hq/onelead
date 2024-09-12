@@ -62,7 +62,11 @@ def get_lead_data(data, lead_config):
 
     # Set all values from Ad form to Lead doctype
     if ad_form_key in webhook_form_dict:
-      lead.set(lead_doc_field, webhook_form_dict.get(ad_form_key))
+      ad_form_value = webhook_form_dict.get(ad_form_key)
+      if ad_form_key == "PHONE_NUMBER":
+        ad_form_value = formate_phone_number(ad_form_value)
+
+      lead.set(lead_doc_field, ad_form_value)
 
     # Set Constant Values for lead doctype.
     for constant in lead_config.constants:
@@ -79,3 +83,10 @@ def get_lead_data(data, lead_config):
   return {"message": "Lead created successfully", "lead_name": lead.name}
 
   # $ curl -v -X POST --header "Content-Type:application/json" -d @google_lead.txt http://oneinbox.localhost:8000/api/method/onelead.utils.google_lead.webhook
+
+def formate_phone_number(phone_number):
+    if phone_number and phone_number.startswith("+"):
+        phone_number = phone_number.replace(" ", "").replace("-", "")
+        return f"{phone_number[:3]}-{phone_number[3:]}"
+    else:
+        return phone_number
