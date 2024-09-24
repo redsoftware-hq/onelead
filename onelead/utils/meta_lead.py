@@ -12,15 +12,15 @@ from frappe.utils.password import get_decrypted_password
 def webhook():
   """ Meta Ads Webhook """
   if frappe.request.method == "GET":
-    validate()
+    return validate()
   elif frappe.request.method == "POST":
     # calculated_signature = calculate_signature(frappe.request.get_data())
     # # print("Calculated Signature: sha1=" + calculated_signature)
     
     # if not verify_signature(frappe.request, "sha1=" + calculated_signature):
     #   return "Invalid signature", 401
-    leadgen()
-    return 
+    return leadgen()
+    # return 
   
   # if frappe.request.method == "GET":
     # return validate()
@@ -40,7 +40,6 @@ def validate():
       frappe.logger().error("Webhook validation failed: Verify token does not match")
       frappe.throw("Verify token does not match")
     
-    print(hub_challenge)
     frappe.logger().info("Webhook validation successful")
     return Response(hub_challenge, status=200)
 
