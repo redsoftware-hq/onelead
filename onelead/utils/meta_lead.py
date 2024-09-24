@@ -40,6 +40,7 @@ def validate():
       frappe.logger().error("Webhook validation failed: Verify token does not match")
       frappe.throw("Verify token does not match")
     
+    print(hub_challenge)
     frappe.logger().info("Webhook validation successful")
     return Response(hub_challenge, status=200)
 
