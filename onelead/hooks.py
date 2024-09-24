@@ -15,7 +15,9 @@ csrf_exempt = {
 
 webhooks = [
     {"method": "POST", "path": "onelead.utils.meta_lead.webhook"},
-    {"method": "POST", "path": "onelead.utils.google_lead.webhook"}
+    {"method": "GET", "path": "onelead.utils.meta_lead.webhook"},
+    {"method": "POST", "path": "onelead.utils.google_lead.webhook"},
+    {"method": "GET", "path": "onelead.utils.google_lead.webhook"}
 ]
 
 
