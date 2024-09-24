@@ -6,6 +6,19 @@ app_email = "dev@redsoftware.in"
 app_license = "mit"
 # required_apps = []
 
+
+#  Allowed APIs
+csrf_exempt = {
+    "onelead.utils.meta_lead.webhook": True,
+    "onelead.utils.google_lead.webhook": True
+}
+
+webhooks = [
+    {"method": "POST", "path": "onelead.utils.meta_lead.webhook"},
+    {"method": "POST", "path": "onelead.utils.google_lead.webhook"}
+]
+
+
 # Includes in <head>
 # ------------------
 
