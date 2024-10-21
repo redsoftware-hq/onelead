@@ -123,7 +123,7 @@ def fetch_lead_data(leadgen_id, lead_conf):
     conf = frappe.get_doc("Meta Webhook Config")
     url = f"{conf.meta_url}/{conf.meta_api_version}/{leadgen_id}"
 
-    user_access_token = frappe.get_decrypted_password('Meta Ad Campaign Config', lead_conf.name, 'user_access_token')
+    user_access_token = get_decrypted_password('Meta Ad Campaign Config', lead_conf.name, 'user_access_token')
     # access_token = get_decrypted_password("Meta Webhook Config", conf.name, "access_token")
     params = {"access_token": user_access_token}
     frappe.logger().info(f"Fetching lead data from Meta API for leadgen_id: {leadgen_id}")
