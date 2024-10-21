@@ -83,7 +83,7 @@
    "fieldname": "user_access_token",
    "fieldtype": "Password",
    "label": "User Access Token",
-   "length": 200
+   "length": 500
   },
   {
    "fieldname": "time_field_mapping_section",
@@ -105,7 +105,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-21 23:20:45.992825",
+ "modified": "2024-10-21 23:43:01.248711",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ad Campaign Config",
