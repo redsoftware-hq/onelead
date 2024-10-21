@@ -8,7 +8,6 @@
   "meta_url",
   "meta_api_version",
   "webhook_verify_token",
-  "access_token",
   "app_id",
   "app_name",
   "is_enabled"
@@ -30,11 +29,6 @@
    "label": "Webhook Verify Token"
   },
   {
-   "fieldname": "access_token",
-   "fieldtype": "Password",
-   "label": "Access Token"
-  },
-  {
    "fieldname": "app_id",
    "fieldtype": "Data",
    "label": "App ID"
@@ -54,7 +48,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-07 00:40:46.131774",
+ "modified": "2024-10-21 22:48:59.534874",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Config",

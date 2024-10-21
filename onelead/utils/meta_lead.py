@@ -122,8 +122,10 @@ def fetch_lead_data(leadgen_id, lead_conf):
   try:
     conf = frappe.get_doc("Meta Webhook Config")
     url = f"{conf.meta_url}/{conf.meta_api_version}/{leadgen_id}"
-    access_token = get_decrypted_password("Meta Webhook Config", conf.name, "access_token")
-    params = {"access_token": access_token}
+
+    user_access_token = frappe.get_decrypted_password('Meta Ad Campaign Config', lead_conf.name, 'user_access_token')
+    # access_token = get_decrypted_password("Meta Webhook Config", conf.name, "access_token")
+    params = {"access_token": user_access_token}
     frappe.logger().info(f"Fetching lead data from Meta API for leadgen_id: {leadgen_id}")
     response = requests.get(url, params=params)
 
@@ -164,6 +166,9 @@ def process_lead_data(lead_data, lead_conf):
     for constant in lead_conf.constants:
       new_lead.set(constant.lead_doctype_field, constant.constant_value)
 
+    # if lead_conf.time_field:
+    #   new_lead.set(lead_conf.lead_doctype_time_field, format_epoch_time())
+
     new_lead.insert(ignore_permissions=True)
     frappe.db.commit()
 
@@ -181,6 +186,9 @@ def formate_phone_number(phone_number):
         return f"{phone_number[:3]}-{phone_number[3:]}"
     else:
         return phone_number
+
+# def format_epoch_time(epoch_time):
+
 
 # def process_lead_data(lead_data, lead_conf):
 #   field_data = lead_data.get("field_data", [])
