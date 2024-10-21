@@ -91,15 +91,15 @@ def process_lead_changes(data):
           for change in entry["changes"]:
             if change["field"] == "leadgen":
               leadgen_id = change["value"].get("leadgen_id")              
-              adgroup_id = change["value"].get("adgroup_id")
+              # adgroup_id = change["value"].get("adgroup_id")
               page_id = change["value"].get("page_id")
               
               lead_conf = None 
 
               if adgroup_id or page_id:
                   filters = {}
-                  if adgroup_id:
-                      filters['ad_group_id'] = adgroup_id
+                  # if adgroup_id:
+                  #     filters['ad_group_id'] = adgroup_id
                   if page_id:
                       filters['page_id'] = page_id
               
@@ -109,10 +109,10 @@ def process_lead_changes(data):
 
                 # Call and fetch doc data again, to fetch all child table data as well.
                 config = frappe.get_doc('Meta Ad Campaign Config', lead_conf[0]['name'])
-                frappe.logger().info(f"Lead configuration found for unique key: {adgroup_id or page_id}")
+                frappe.logger().info(f"Lead configuration found for unique key: { page_id}")
                 fetch_lead_data(leadgen_id, config)
               else:
-                frappe.logger().error(f"No lead configuration found for unique key: {adgroup_id or page_id}")
+                frappe.logger().error(f"No lead configuration found for unique key: { page_id}")
 
   except Exception as e:
     frappe.logger().error(f"Error in processing lead changes: {str(e)}", exc_info=True)
@@ -121,7 +121,7 @@ def process_lead_changes(data):
 def fetch_lead_data(leadgen_id, lead_conf):
   try:
     conf = frappe.get_doc("Meta Webhook Config")
-    url = f"{conf.meta_url}/{conf.meta_api_version}/{leadgen_id}"
+    url = f"{conf.meta_url}/{conf.meta_api_version}/{leadgen_id}/"
 
     user_access_token = get_decrypted_password('Meta Ad Campaign Config', lead_conf.name, 'user_access_token')
     # access_token = get_decrypted_password("Meta Webhook Config", conf.name, "access_token")
