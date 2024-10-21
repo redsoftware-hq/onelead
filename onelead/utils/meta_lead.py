@@ -96,7 +96,7 @@ def process_lead_changes(data):
               
               lead_conf = None 
 
-              if adgroup_id or page_id:
+              if page_id:
                   filters = {}
                   # if adgroup_id:
                   #     filters['ad_group_id'] = adgroup_id
