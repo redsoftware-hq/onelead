@@ -55,13 +55,16 @@ def leadgen():
     frappe.logger().info(f"Received POST request body: {json.dumps(data)}")
 
     # Log the incoming request data in Meta Lead Logs
-    frappe.get_doc({
-      "doctype": "Meta Lead Logs",
-      "json": json.dumps(data)
-    }).insert(ignore_permissions=True)
+    lead_log = frappe.new_doc("Meta Lead Logs")
+    lead_log.set('json', json.dumps(data))
+
+    # frappe.get_doc({
+    #   "doctype": "Meta Lead Logs",
+    #   "json": json.dumps(data)
+    # }).insert(ignore_permissions=True)
 
     frappe.logger().info("Processing Facebook request body")
-    process_lead_changes(data)
+    process_lead_changes(data, lead_log)
     return Response("Lead processed", status=200)
 
   except Exception as e:
@@ -83,7 +86,7 @@ def leadgen():
 #     mac = hmac.new(bytes(frappe.conf.facebook_app_secret, 'utf-8'), msg=request.get_data(), digestmod=sha1)
 #     return hmac.compare_digest(mac.hexdigest(), signature)
 
-def process_lead_changes(data):
+def process_lead_changes(data, lead_log):
   try:
     if "entry" in data:
       for entry in data["entry"]:
@@ -93,9 +96,23 @@ def process_lead_changes(data):
               leadgen_id = change["value"].get("leadgen_id")              
               # adgroup_id = change["value"].get("adgroup_id")
               page_id = change["value"].get("page_id")
+
+              try:
+                lead_exists = frappe.get_doc("Meta Lead Logs", f"{page_id}_{leadgen_id}")
+
+                if lead_exists:
+                  frappe.logger().info(f"Lead with leadgen_id {leadgen_id} exists!")
+                  return
+              except:
+                # New Lead entry, no lead found.
+                pass
+                
+              lead_log.set("leadgen_id", leadgen_id)
+              lead_log.set("page_id", page_id)
               
               lead_conf = None 
 
+              # Only during testing there won't be any page_id. when hit from developer plateform webhook.
               if page_id:
                   filters = {}
                   # if adgroup_id:
@@ -109,8 +126,13 @@ def process_lead_changes(data):
 
                 # Call and fetch doc data again, to fetch all child table data as well.
                 config = frappe.get_doc('Meta Ad Campaign Config', lead_conf[0]['name'])
+                lead_log.set("meta_ads_config", config.name)
+                lead_log.set("lead_doctype_reference", config.lead_doctype)
+
+                lead_log.insert(ignore_permissions=True)
+
                 frappe.logger().info(f"Lead configuration found for unique key: { page_id}")
-                fetch_lead_data(leadgen_id, config)
+                fetch_lead_data(leadgen_id, config, lead_log)
               else:
                 frappe.logger().error(f"No lead configuration found for unique key: { page_id}")
 
@@ -118,7 +140,7 @@ def process_lead_changes(data):
     frappe.logger().error(f"Error in processing lead changes: {str(e)}", exc_info=True)
     raise
 
-def fetch_lead_data(leadgen_id, lead_conf):
+def fetch_lead_data(leadgen_id, lead_conf, lead_log):
   try:
     conf = frappe.get_doc("Meta Webhook Config")
     url = f"{conf.meta_url}/{conf.meta_api_version}/{leadgen_id}/"
@@ -132,15 +154,28 @@ def fetch_lead_data(leadgen_id, lead_conf):
     if response.status_code == 200:
       frappe.logger().info(f"Successfully fetched lead data for leadgen_id: {leadgen_id}")
       lead_data = response.json()
-      process_lead_data(lead_data, lead_conf)
+      lead_log.set("lead_json", lead_data)
+      lead_log.save(ignore_permissions=True)
+
+      new_lead = process_lead_data(lead_data, lead_conf)
+      print(new_lead)
+      lead_log.set("lead_doctype", new_lead.get("lead_name"))
+      lead_log.set("lead_entry_successful", True)
+      lead_log.save(ignore_permissions=True)
+
+      return new_lead
     else:
       frappe.logger().error(f"Failed to fetch lead data for leadgen_id: {leadgen_id}. Status Code: {response.status_code}, Response: {response.text}")
   
   except requests.RequestException as e:
+    lead_log.set("error", f"Request error while fetching lead data: {str(e)}")
+    lead_log.save(ignore_permissions=True)
     frappe.logger().error(f"Request error while fetching lead data: {str(e)}", exc_info=True)
     raise
   
   except Exception as e:
+    lead_log.set("error", f"Error in fetching lead data: {str(e)}")
+    lead_log.save(ignore_permissions=True)
     frappe.logger().error(f"Error in fetching lead data: {str(e)}", exc_info=True)
     raise
 
