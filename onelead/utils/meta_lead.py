@@ -159,7 +159,7 @@ def fetch_lead_data(leadgen_id, lead_conf, lead_log):
 
       new_lead = process_lead_data(lead_data, lead_conf)
       print(new_lead)
-      lead_log.set("lead_doctype", new_lead.get("lead_name"))
+      # lead_log.set("lead_doctype", new_lead.get("lead_name"))
       lead_log.set("lead_entry_successful", True)
       lead_log.save(ignore_permissions=True)
 
