@@ -1,0 +1,137 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:account_id",
+ "creation": "2024-10-27 22:07:02.753753",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "account_id",
+  "act_id",
+  "column_break_ykgs",
+  "account_name",
+  "account_status",
+  "business_section",
+  "business_name",
+  "business_country_code",
+  "business_city",
+  "business_state",
+  "business_zip",
+  "column_break_jbxx",
+  "currency"
+ ],
+ "fields": [
+  {
+   "fieldname": "account_id",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Account ID",
+   "no_copy": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "business_name",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "description": "1 = ACTIVE,\n2 = DISABLED,\n3 = UNSETTLED,\n7 = PENDING_RISK_REVIEW,\n8 = PENDING_SETTLEMENT,\n9 = IN_GRACE_PERIOD,\n100 = PENDING_CLOSURE,\n101 = CLOSED,\n201 = ANY_ACTIVE,\n202 = ANY_CLOSED",
+   "fieldname": "account_status",
+   "fieldtype": "Select",
+   "label": "Account Status",
+   "options": "1\n2\n3\n7\n8\n9\n100\n101\n201\n202"
+  },
+  {
+   "fieldname": "business_section",
+   "fieldtype": "Section Break",
+   "label": "Business"
+  },
+  {
+   "fieldname": "business_country_code",
+   "fieldtype": "Data",
+   "label": "Country"
+  },
+  {
+   "fieldname": "business_city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "business_state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "business_zip",
+   "fieldtype": "Data",
+   "label": "zip"
+  },
+  {
+   "fieldname": "column_break_ykgs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_jbxx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Currency",
+   "label": "Currency"
+  },
+  {
+   "fieldname": "account_name",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "act_id",
+   "fieldtype": "Data",
+   "label": "act_ID",
+   "unique": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Meta Campaign",
+   "link_fieldname": "ad_account"
+  }
+ ],
+ "modified": "2024-10-30 01:35:10.414454",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Ad Account",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "account_name"
+}

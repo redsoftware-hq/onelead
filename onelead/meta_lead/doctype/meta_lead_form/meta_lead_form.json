@@ -1,0 +1,120 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:form_id",
+ "creation": "2024-10-27 23:24:41.332611",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "form_details_section",
+  "form_id",
+  "form_name",
+  "status",
+  "locale",
+  "column_break_asvw",
+  "campaign",
+  "ads",
+  "form_mapping_section",
+  "lead_doctype_reference",
+  "mapping"
+ ],
+ "fields": [
+  {
+   "fieldname": "form_name",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Form Name"
+  },
+  {
+   "fieldname": "column_break_asvw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "ads.campaign",
+   "fieldname": "campaign",
+   "fieldtype": "Read Only",
+   "label": "Campaign"
+  },
+  {
+   "fieldname": "ads",
+   "fieldtype": "Link",
+   "label": "Ads",
+   "options": "Meta Ads"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status"
+  },
+  {
+   "fieldname": "locale",
+   "fieldtype": "Data",
+   "label": "Locale"
+  },
+  {
+   "fieldname": "form_details_section",
+   "fieldtype": "Section Break",
+   "label": "Form Details"
+  },
+  {
+   "fieldname": "form_mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Form Mapping"
+  },
+  {
+   "description": "Enter Lead DocType, where data entry should happen.",
+   "fieldname": "lead_doctype_reference",
+   "fieldtype": "Link",
+   "label": "Lead DocType Reference",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "mapping",
+   "fieldtype": "Table",
+   "label": "Mapping",
+   "options": "Meta Lead Form Mapping"
+  },
+  {
+   "fieldname": "form_id",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Form Id",
+   "reqd": 1,
+   "unique": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-10-30 02:01:10.195453",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Lead Form",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "form_id, form_name",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "form_name"
+}

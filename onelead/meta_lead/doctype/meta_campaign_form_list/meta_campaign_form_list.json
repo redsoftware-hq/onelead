@@ -1,0 +1,62 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-29 21:49:16.729905",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "meta_lead_form",
+  "form_name",
+  "status",
+  "quick_map"
+ ],
+ "fields": [
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "meta_lead_form",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Meta Lead Form",
+   "options": "Meta Lead Form",
+   "reqd": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fetch_from": "meta_lead_form.form_name",
+   "fieldname": "form_name",
+   "fieldtype": "Read Only",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Form Name"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Not Mapped\nMapped"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "quick_map",
+   "fieldtype": "Button",
+   "in_list_view": 1,
+   "label": "Quick Map"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-10-29 22:01:04.916723",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Campaign Form List",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

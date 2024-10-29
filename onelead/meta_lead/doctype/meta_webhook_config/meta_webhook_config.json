@@ -9,7 +9,10 @@
   "meta_api_version",
   "webhook_verify_token",
   "app_id",
+  "app_secret",
   "app_name",
+  "user_access_token",
+  "connect_facebook",
   "is_enabled"
  ],
  "fields": [
@@ -43,12 +46,28 @@
    "fieldname": "is_enabled",
    "fieldtype": "Check",
    "label": "Is Enabled"
+  },
+  {
+   "fieldname": "app_secret",
+   "fieldtype": "Password",
+   "label": "App Secret"
+  },
+  {
+   "fieldname": "connect_facebook",
+   "fieldtype": "Button",
+   "label": "Connect Facebook"
+  },
+  {
+   "fieldname": "user_access_token",
+   "fieldtype": "Password",
+   "label": "User Access Token",
+   "length": 500
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-21 22:48:59.534874",
+ "modified": "2024-10-29 23:11:25.219235",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Config",

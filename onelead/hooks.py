@@ -21,6 +21,12 @@ webhooks = [
 ]
 
 
+doc_events = {
+    "Meta Lead Form": {
+        "before_insert": "onelead.utils.meta.manage_ads.fetch_form_details"
+    }
+}
+
 # Includes in <head>
 # ------------------
 

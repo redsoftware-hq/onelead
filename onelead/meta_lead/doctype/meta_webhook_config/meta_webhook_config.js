@@ -6,3 +6,18 @@
 
 // 	},
 // });
+
+frappe.ui.form.on('Meta Webhook Config', {
+  connect_facebook: function (frm) {
+    frappe.call({
+      method: 'onelead.utils.meta.manage_ads.get_adaccounts',
+      callback: function (response) {
+        console.log(response)
+        if (response.message) {
+          frappe.msgprint("Ad Accounts and Pages fetched successfully!");
+          frm.reload_doc();
+        }
+      }
+    });
+  }
+});

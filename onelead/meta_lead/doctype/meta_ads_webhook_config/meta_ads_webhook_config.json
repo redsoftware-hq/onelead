@@ -1,0 +1,153 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-27 23:56:01.715307",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "ad_account_section",
+  "ad_account",
+  "page",
+  "section_break_ifha",
+  "user_token",
+  "page_token",
+  "section_break_aico",
+  "campaign",
+  "section_break_blxw",
+  "config_based_on_ad_name",
+  "column_break_ktsf",
+  "ads",
+  "form_list_section",
+  "forms_list",
+  "section_break_goiu",
+  "lead_doctype_reference",
+  "form_mapping",
+  "form"
+ ],
+ "fields": [
+  {
+   "fieldname": "ad_account",
+   "fieldtype": "Link",
+   "label": "Ad Account",
+   "options": "Meta Ad Account"
+  },
+  {
+   "fieldname": "page",
+   "fieldtype": "Link",
+   "label": "Page",
+   "options": "Meta Page"
+  },
+  {
+   "fieldname": "section_break_ifha",
+   "fieldtype": "Section Break",
+   "label": "Access Tokens"
+  },
+  {
+   "fieldname": "user_token",
+   "fieldtype": "Password",
+   "label": "User Token",
+   "length": 500
+  },
+  {
+   "fieldname": "page_token",
+   "fieldtype": "Password",
+   "label": "Page Token",
+   "length": 500
+  },
+  {
+   "fieldname": "section_break_aico",
+   "fieldtype": "Section Break",
+   "label": "campaign"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Meta Campaign"
+  },
+  {
+   "fieldname": "section_break_blxw",
+   "fieldtype": "Section Break",
+   "label": "Ads"
+  },
+  {
+   "default": "0",
+   "fieldname": "config_based_on_ad_name",
+   "fieldtype": "Check",
+   "label": "Config based on Ad Name?"
+  },
+  {
+   "fieldname": "column_break_ktsf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ads",
+   "fieldtype": "Link",
+   "label": "Ads",
+   "options": "Meta Ads"
+  },
+  {
+   "fieldname": "section_break_goiu",
+   "fieldtype": "Section Break",
+   "label": "Lead Form"
+  },
+  {
+   "fieldname": "lead_doctype_reference",
+   "fieldtype": "Link",
+   "label": "Lead DocType Reference",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "form_mapping",
+   "fieldtype": "Table",
+   "label": "Form Mapping",
+   "options": "Meta Lead Form Mapping"
+  },
+  {
+   "fieldname": "form",
+   "fieldtype": "Link",
+   "label": "Form",
+   "options": "Meta Lead Form"
+  },
+  {
+   "fieldname": "ad_account_section",
+   "fieldtype": "Section Break",
+   "label": "Ad Account"
+  },
+  {
+   "fieldname": "form_list_section",
+   "fieldtype": "Section Break",
+   "label": "Form List"
+  },
+  {
+   "fieldname": "forms_list",
+   "fieldtype": "Table",
+   "label": "Forms List",
+   "options": "Meta Campaign Form List"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-10-30 02:40:41.652902",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Ads Webhook Config",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

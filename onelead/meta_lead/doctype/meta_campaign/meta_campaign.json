@@ -1,0 +1,110 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:campaign_id",
+ "creation": "2024-10-27 22:45:46.418224",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign_id",
+  "campaign_name",
+  "campaign_objective",
+  "ad_account",
+  "column_break_zfpa",
+  "status",
+  "start_time",
+  "stop_time"
+ ],
+ "fields": [
+  {
+   "fieldname": "campaign_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Campaign Name"
+  },
+  {
+   "description": "It should be OUTCOME_LEADS (or LEAD_GENERATION)",
+   "fieldname": "campaign_objective",
+   "fieldtype": "Data",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Campaign Objective"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "\nACTIVE\nPAUSED\nDELETED\nARCHIVED"
+  },
+  {
+   "fieldname": "column_break_zfpa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Date",
+   "label": "Start Time"
+  },
+  {
+   "fieldname": "stop_time",
+   "fieldtype": "Date",
+   "label": "Stop Time"
+  },
+  {
+   "fieldname": "ad_account",
+   "fieldtype": "Link",
+   "label": "Ad Account",
+   "options": "Meta Ad Account"
+  },
+  {
+   "fieldname": "campaign_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Campaign Id",
+   "no_copy": 1,
+   "reqd": 1,
+   "unique": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Meta Ads",
+   "link_fieldname": "campaign"
+  }
+ ],
+ "modified": "2024-10-30 01:34:42.406514",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Campaign",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "campaign_name, campaign_id, status",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "campaign_name"
+}
