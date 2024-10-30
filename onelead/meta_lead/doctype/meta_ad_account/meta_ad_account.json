@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:account_id",
+ "autoname": "format:{account_id}",
  "creation": "2024-10-27 22:07:02.753753",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -109,11 +109,11 @@
    "link_fieldname": "ad_account"
   }
  ],
- "modified": "2024-10-30 01:35:10.414454",
+ "modified": "2024-10-30 19:19:22.761071",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ad Account",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

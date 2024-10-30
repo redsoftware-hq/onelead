@@ -40,6 +40,7 @@
   {
    "fieldname": "section_break_ifha",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Access Tokens"
   },
   {
@@ -89,6 +90,7 @@
   {
    "fieldname": "section_break_goiu",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Lead Form"
   },
   {
@@ -128,7 +130,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-30 02:40:41.652902",
+ "modified": "2024-10-30 20:36:46.054779",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ads Webhook Config",

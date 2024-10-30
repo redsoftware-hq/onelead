@@ -44,13 +44,14 @@
    "fieldname": "quick_map",
    "fieldtype": "Button",
    "in_list_view": 1,
+   "in_preview": 1,
    "label": "Quick Map"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-29 22:01:04.916723",
+ "modified": "2024-10-30 21:05:08.055470",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Campaign Form List",

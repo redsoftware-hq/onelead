@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:ads_id",
+ "autoname": "format:{ads_id}",
  "creation": "2024-10-27 23:09:15.271766",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -60,11 +60,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-30 01:33:52.276548",
+ "modified": "2024-10-30 18:31:12.683041",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ads",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

@@ -138,66 +138,76 @@ def fetch_campaigns(page_id, ad_account_id):
     FacebookAdsApi.init(app_id, app_secret, user_token)
     
     try:
-        # Fetch campaigns associated with the given ad account
         ad_account = AdAccount(f'act_{ad_account_id}')
-        campaigns = ad_account.get_campaigns(fields=[
-            'id', 'name', 'objective', 'status', 'start_time', 'stop_time', 'created_time', 'ads.limit(100){id,name,status,creative{object_story_spec}}'
-        ],  params={'limit': 100, 'status': ['ACTIVE']})
         
-        # Loop through each campaign and save it in Meta Campaign DocType
-        for campaign in campaigns:
-            campaign_id = campaign['id']
-            campaign_name = campaign.get('name', 'No Name')
-            campaign_objective = campaign.get('objective')
-            campaign_status = campaign.get('status')
-            start_time = campaign.get('start_time', None)
-            stop_time = campaign.get('stop_time', None)
+        # Start fetching campaigns
+        params = {'limit': 100, 'status': ['ACTIVE']}
+        fields = [
+            'id', 'name', 'objective', 'status', 'start_time', 'stop_time', 'created_time', 'ads.limit(100){id,name,status,creative{object_story_spec}}'
+        ]
+        campaigns_cursor = ad_account.get_campaigns(fields=fields, params=params)
 
-            doc_dict = {
-                "campaign_id": campaign_id,
-                "campaign_name": campaign_name,
-                "campaign_objective": campaign_objective,
-                "ad_account": ad_account_id,
-                "status": campaign_status,
-            }
+        while True:
+            # Loop through each campaign and save it in Meta Campaign DocType
+            for campaign in campaigns_cursor:
+                campaign_id = campaign['id']
+                campaign_name = campaign.get('name', 'No Name')
+                campaign_objective = campaign.get('objective')
+                campaign_status = campaign.get('status')
+                start_time = campaign.get('start_time', None)
+                stop_time = campaign.get('stop_time', None)
 
-            if start_time:
-                doc_dict["start_time"] = datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%S%z").date()
-            if stop_time:
-                doc_dict["stop_time"] = datetime.strptime(stop_time, "%Y-%m-%dT%H:%M:%S%z").date()
-
-            # Create or update Meta Campaign document
-            campaign_doc = frappe.get_doc("Meta Campaign", {"campaign_id": campaign_id}) if frappe.db.exists("Meta Campaign", {"campaign_id": campaign_id}) else frappe.new_doc("Meta Campaign")
-            campaign_doc.update(doc_dict)
-            campaign_doc.save(ignore_permissions=True)
-
-            print(campaign)
-            # Process ads associated with this campaign
-            ads = campaign.get("ads", [])
-            for ad in ads:
-                ad_id = ad["id"]
-                ad_name = ad.get("name", "No Name")
-                ad_status = ad.get("status")
-                
-                # Check if the ad has a lead generation form in its creative
-                has_lead_form = False
-                if ad.get("creative") and ad["creative"].get("object_story_spec") and ad["creative"]["object_story_spec"].get("call_to_action"):
-                    call_to_action = ad["creative"]["object_story_spec"]["call_to_action"]
-                    has_lead_form = "lead_gen_form_id" in call_to_action.get("value", {})
-
-                # Prepare ad doc dictionary
-                ad_doc_dict = {
-                    "ads_id": ad_id,
-                    "ads_name": ad_name,
-                    "status": ad_status,
-                    "campaign": campaign_id,
-                    "has_form": has_lead_form
+                doc_dict = {
+                    "campaign_id": campaign_id,
+                    "campaign_name": campaign_name,
+                    "campaign_objective": campaign_objective,
+                    "ad_account": ad_account_id,
+                    "status": campaign_status,
                 }
 
-                # Upsert Meta Ads document
-                ad_doc = frappe.get_doc("Meta Ads", {"ads_id": ad_id}) if frappe.db.exists("Meta Ads", {"ads_id": ad_id}) else frappe.new_doc("Meta Ads")
-                ad_doc.update(ad_doc_dict)
-                ad_doc.save(ignore_permissions=True)
+                if start_time:
+                    doc_dict["start_time"] = datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%S%z").date()
+                if stop_time:
+                    doc_dict["stop_time"] = datetime.strptime(stop_time, "%Y-%m-%dT%H:%M:%S%z").date()
+
+                # Create or update Meta Campaign document
+                campaign_doc = frappe.get_doc("Meta Campaign", {"campaign_id": campaign_id}) if frappe.db.exists("Meta Campaign", {"campaign_id": campaign_id}) else frappe.new_doc("Meta Campaign")
+                campaign_doc.update(doc_dict)
+                campaign_doc.save(ignore_permissions=True)
+
+                # Process ads associated with this campaign
+                ads = campaign.get("ads", [])
+                for ad in ads:
+                    ad_id = ad["id"]
+                    ad_name = ad.get("name", "No Name")
+                    ad_status = ad.get("status")
+                    
+                    # Check if the ad has a lead generation form in its creative
+                    has_lead_form = False
+                    if ad.get("creative") and ad["creative"].get("object_story_spec") and ad["creative"]["object_story_spec"].get("call_to_action"):
+                        call_to_action = ad["creative"]["object_story_spec"]["call_to_action"]
+                        has_lead_form = "lead_gen_form_id" in call_to_action.get("value", {})
+
+                    # Prepare ad doc dictionary
+                    ad_doc_dict = {
+                        "ads_id": ad_id,
+                        "ads_name": ad_name,
+                        "status": ad_status,
+                        "campaign": campaign_id,
+                        "has_form": has_lead_form
+                    }
+
+                    # Upsert Meta Ads document
+                    ad_doc = frappe.get_doc("Meta Ads", {"ads_id": ad_id}) if frappe.db.exists("Meta Ads", {"ads_id": ad_id}) else frappe.new_doc("Meta Ads")
+                    ad_doc.update(ad_doc_dict)
+                    ad_doc.save(ignore_permissions=True)
+            
+            # Check for next page
+            if campaigns_cursor.load_next_page():
+                campaigns_cursor = campaigns_cursor.next()
+                print(campaigns_cursor)
+            else:
+                break
         
         frappe.db.commit()
         return "Success"
@@ -246,6 +256,9 @@ def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=No
 
         # Store forms in Meta Lead Form and Form List table
         for form in forms:
+            print(forms)
+            print(campaign_id)
+
             # Create or update Meta Lead Form DocType
             if not frappe.db.exists("Meta Lead Form", {"form_id": form["id"]}):
                 form_doc = frappe.get_doc({
@@ -267,27 +280,64 @@ def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=No
         frappe.log_error(frappe.get_traceback(), "Meta API Error")
         frappe.throw(f"Failed to fetch forms: {str(e)}")
 
+def find_call_to_action(data, depth=0, max_depth=5):
+    """Recursively find all call_to_action objects in a nested structure.
+        call_to_action can be in different ad object link_data, video_data,
+        and these objects may have child_attachments which would have same
+        lead_gen_form_id most of the time, but to support edge cases it searches
+        recursively.
+        give max_depth of 5 to prevent any misuse.
+    """
+    if depth > max_depth:
+        return []
+    
+    call_to_actions = []
+    
+    if isinstance(data, dict):
+        # If 'call_to_action' is in the current dictionary, add it to the list
+        if 'call_to_action' in data:
+            call_to_actions.append(data['call_to_action'])
+        
+        # Recursively search in each value of the dictionary
+        for key, value in data.items():
+            call_to_actions.extend(find_call_to_action(value, depth + 1, max_depth))
+    
+    elif isinstance(data, list):
+        # Recursively search each item in the list
+        for item in data:
+            call_to_actions.extend(find_call_to_action(item, depth + 1, max_depth))
+    
+    return call_to_actions
+
 def extract_forms_from_ad(ad_data):
     """Extract forms from the ad creatives in the ad data."""
     forms = []
+    seen_form_ids = set()
+
     creatives = ad_data.get("adcreatives", {}).get("data", [])
+
     for creative in creatives:
         object_story_spec = creative.get("object_story_spec", {})
-        call_to_action = object_story_spec.get("call_to_action", {})
-        form_id = call_to_action.get("value", {}).get("lead_gen_form_id")
-        if form_id:
-            forms.append({
-                "id": form_id,
-                "ads_id": ad_data["id"],
-                "name": call_to_action.get("type", "no type")
-            })
+        call_to_actions = find_call_to_action(object_story_spec)
+
+        for call_to_action in call_to_actions:
+            form_id = call_to_action.get("value", {}).get("lead_gen_form_id")
+
+            # maintain set for unique form IDs
+            if form_id and form_id not in seen_form_ids:
+                forms.append({
+                    "id": form_id,
+                    "name": call_to_action.get("type", "no type")
+                })
+                seen_form_ids.add(form_id)
+
     return forms
 
 @frappe.whitelist()
-def fetch_form_details(doc):
+def fetch_form_details(doc, method):
     # Check if Form ID and Campaign are provided
-    if not doc.form_id or not doc.campaign_id:
-        frappe.throw("Both Form ID and Campaign ID are required to fetch form details.")
+    if not doc.form_id or not doc.campaign:
+        frappe.throw("Both Form ID and Campaign are required to fetch form details.")
     
     # Get Meta Webhook Config settings for credentials
     meta_config = frappe.get_single("Meta Webhook Config")

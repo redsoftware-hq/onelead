@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:form_id",
+ "autoname": "format:{form_id}",
  "creation": "2024-10-27 23:24:41.332611",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -91,11 +91,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-30 02:01:10.195453",
+ "modified": "2024-10-30 18:30:41.998237",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

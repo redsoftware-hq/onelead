@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:campaign_id",
+ "autoname": "format:{campaign_id}",
  "creation": "2024-10-27 22:45:46.418224",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -69,7 +69,6 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Campaign Id",
-   "no_copy": 1,
    "reqd": 1,
    "unique": 1
   }
@@ -81,11 +80,11 @@
    "link_fieldname": "campaign"
   }
  ],
- "modified": "2024-10-30 01:34:42.406514",
+ "modified": "2024-10-30 19:20:38.051194",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Campaign",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

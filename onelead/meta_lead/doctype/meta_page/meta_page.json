@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:page_id",
+ "autoname": "format:{page_id}",
  "creation": "2024-10-27 22:52:36.186353",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -44,11 +44,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-30 00:57:12.572967",
+ "modified": "2024-10-30 18:32:02.207459",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Page",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
