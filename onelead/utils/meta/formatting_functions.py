@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from frappe.utils import now
 
 def format_phone_number(phone_number, code="+1"):
     """Format phone numbers to international format."""
@@ -38,6 +39,9 @@ def capitalize_name(name):
     """Capitalize each part of a name."""
     return ' '.join([word.capitalize() for word in name.split()])
 
+def now(current_value):
+    """add current date"""
+    return now()
 # Dictionary to map function names to actual functions
 # formatting_functions = {
 #     "format_phone_number": format_phone_number,

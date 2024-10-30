@@ -144,7 +144,7 @@ def get_lead_config(page_id, form_id=None):
         
         # If a form_id is provided, ensure the form exists in the config's forms list
         if form_id:
-            form_exists = any(form.form_id == form_id for form in config.forms_list)
+            form_exists = any(form.meta_lead_form == form_id for form in config.forms_list)
             if not form_exists:
                 return None  # Return None if the form_id does not exist in config
 

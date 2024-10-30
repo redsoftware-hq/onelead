@@ -219,7 +219,7 @@ frappe.ui.form.on("Meta Campaign Form List", {
           }, 10); // Longer display of Warning as feature is WIP and don't want to block by Error.
 
           // Stop the save action
-          return;
+          // return;
         }
 
         // Validations for mapping table
