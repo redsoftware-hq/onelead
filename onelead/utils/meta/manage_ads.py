@@ -260,14 +260,15 @@ def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=No
             print(campaign_id)
 
             # Create or update Meta Lead Form DocType
-            if not frappe.db.exists("Meta Lead Form", {"form_id": form["id"]}):
-                form_doc = frappe.get_doc({
-                    "doctype": "Meta Lead Form",
-                    "form_id": form["id"],
-                    # "ads": form["ads_id"]  #commented out, as there needs to be hook for checking Ads Link present before insert
-                    "campaign": campaign_id
-                })
-                form_doc.insert(ignore_permissions=True)
+            form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form["id"]}) if frappe.db.exists("Meta Lead Form", {"form_id": form["id"]}) else frappe.new_doc("Meta Lead Form")
+
+            form_doc.update({
+                # "doctype": "Meta Lead Form",
+                "form_id": form["id"],
+                # "ads": form["ads_id"]  #commented out, as there needs to be hook for checking Ads Link present before insert
+                "campaign": campaign_id
+            })
+            form_doc.save(ignore_permissions=True)
 
         print(forms)
         frappe.db.commit()
@@ -364,16 +365,31 @@ def fetch_form_details(doc, method):
         doc.status = form_data.get("status", "INACTIVE")
         doc.locale = form_data.get("locale", "en_US")
 
+        # Convert existing meta fields in mapping to a set for easy checking
+        existing_meta_fields = {entry.meta_field for entry in doc.mapping}
 
         # Add questions to the child table
         questions = form_data.get("questions", [])
         for question in questions:
-            doc.append("mapping", {
-                "meta_field": question.get("key", ''),
-                "lead_doctype_field": "", 
-                "default_value": "",      
-                "formatting_function": ""
-            })
+            meta_field = question.get("key", '')
+            if meta_field and meta_field not in existing_meta_fields:
+                doc.append("mapping", {
+                    "meta_field": meta_field,
+                    "lead_doctype_field": "", 
+                    "default_value": "",      
+                    "formatting_function": ""
+                })
+        # for question in questions:
+        #     doc.append("mapping", {
+        #         "meta_field": question.get("key", ''),
+        #         "lead_doctype_field": "", 
+        #         "default_value": "",      
+        #         "formatting_function": ""
+        #     })
+        print(doc)
+        print(existing_meta_fields)
+        print(questions)
+        return
 
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Meta API Error")

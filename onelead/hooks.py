@@ -23,7 +23,7 @@ webhooks = [
 
 doc_events = {
     "Meta Lead Form": {
-        "before_insert": "onelead.utils.meta.manage_ads.fetch_form_details"
+        "before_save": "onelead.utils.meta.manage_ads.fetch_form_details"
     },
     "Meta Webhook Lead Logs": {
         "after_insert": "onelead.utils.meta.manage_leads.process_logged_lead"

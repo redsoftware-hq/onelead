@@ -103,3 +103,20 @@ def create_lead_entry(lead_data, form_config):
     except Exception as e:
         frappe.logger().error(f"Error creating lead document: {str(e)}", exc_info=True)
         raise
+    
+
+# Example setup for calling the function dynamically
+def call_function_dynamically(func, value, *args):
+    # Check the function's parameter count
+    func_param_count = func.__code__.co_argcount
+
+    # Call with only the required number of arguments
+    if func_param_count == 1:
+        # Function only expects one argument (e.g., value)
+        return func(value)
+    elif func_param_count == 2:
+        # Function expects two arguments (e.g., value, code)
+        return func(value, args[0] if args else None)
+    else:
+        # Function expects more than two arguments
+        return func(value, *args[:func_param_count - 1])
