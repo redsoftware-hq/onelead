@@ -1,0 +1,146 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-30 22:59:49.795808",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "webhook_data_section",
+  "leadgen_id",
+  "page_id",
+  "ad_id",
+  "form_id",
+  "created_time",
+  "received_time",
+  "column_break_ufar",
+  "processing_status",
+  "error_message",
+  "reference_section",
+  "campaign",
+  "config_reference",
+  "column_break_elsw",
+  "lead_doc_reference",
+  "lead_doctype",
+  "section_break_elsx",
+  "raw_payload"
+ ],
+ "fields": [
+  {
+   "fieldname": "webhook_data_section",
+   "fieldtype": "Section Break",
+   "label": "Webhook Data"
+  },
+  {
+   "fieldname": "leadgen_id",
+   "fieldtype": "Data",
+   "label": "Leadgen ID"
+  },
+  {
+   "fieldname": "page_id",
+   "fieldtype": "Data",
+   "label": "Page ID"
+  },
+  {
+   "fieldname": "ad_id",
+   "fieldtype": "Data",
+   "label": "Ad ID"
+  },
+  {
+   "fieldname": "form_id",
+   "fieldtype": "Data",
+   "label": "Form ID"
+  },
+  {
+   "fieldname": "created_time",
+   "fieldtype": "Date",
+   "label": "Created Time"
+  },
+  {
+   "fieldname": "received_time",
+   "fieldtype": "Date",
+   "label": "Received Time"
+  },
+  {
+   "fieldname": "column_break_ufar",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "processing_status",
+   "fieldtype": "Select",
+   "label": "Processing Status",
+   "options": "Pending\nUnconfigured\nProcessed\nError"
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Text",
+   "label": "Error Message"
+  },
+  {
+   "fieldname": "reference_section",
+   "fieldtype": "Section Break",
+   "label": "Reference"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Meta Campaign"
+  },
+  {
+   "fieldname": "config_reference",
+   "fieldtype": "Link",
+   "label": "Config Reference",
+   "options": "Meta Ads Webhook Config"
+  },
+  {
+   "fieldname": "column_break_elsw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lead_doc_reference",
+   "fieldtype": "Dynamic Link",
+   "label": "Lead Doc Reference",
+   "options": "lead_doctype"
+  },
+  {
+   "fieldname": "lead_doctype",
+   "fieldtype": "Link",
+   "label": "Lead DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "section_break_elsx",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "raw_payload",
+   "fieldtype": "Code",
+   "label": "Raw Payload"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-10-30 23:23:25.056948",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Webhook Lead Logs",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

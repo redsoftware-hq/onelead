@@ -1,7 +1,8 @@
 import frappe
 import json
 import requests
-import time
+from frappe.utils import now
+from datetime import datetime
 from werkzeug.wrappers import Response
 import frappe.utils
 from hashlib import sha1
@@ -10,66 +11,105 @@ from frappe.utils.password import get_decrypted_password
 
 @frappe.whitelist(allow_guest=True)
 def webhook():
-  """ Meta Ads Webhook """
-  if frappe.request.method == "GET":
-    return validate()
-  elif frappe.request.method == "POST":
-    # calculated_signature = calculate_signature(frappe.request.get_data())
-    # # print("Calculated Signature: sha1=" + calculated_signature)
-    
-    # if not verify_signature(frappe.request, "sha1=" + calculated_signature):
-    #   return "Invalid signature", 401
-    return leadgen()
-    # return 
-  
-  # if frappe.request.method == "GET":
-    # return validate()
-  # return leadgen()
+    """ Meta Ads Webhook Entry Point """
+    if frappe.request.method == "GET":
+        return validate()
+    elif frappe.request.method == "POST":
+        return leadgen()
 
 def validate():
-  """Validate connection by webhook token verification"""
-  try:
-    # Log the GET request data for debugging
-    frappe.logger().info(f"Received GET request data: {frappe.form_dict}")
+    """ Validate webhook token for initial connection setup """
+    try:
+        hub_challenge = frappe.form_dict.get("hub.challenge")
+        verify_token = frappe.db.get_single_value("Meta Webhook Config", "webhook_verify_token")
+        if frappe.form_dict.get("hub.verify_token") != verify_token:
+            frappe.throw("Verify token does not match")
+        return Response(hub_challenge, status=200)
+    except Exception as e:
+        frappe.logger().error(f"Webhook validation error: {str(e)}", exc_info=True)
+        return Response(f"Error in webhook validation: {str(e)}", status=500)
 
-    hub_challenge = frappe.form_dict.get("hub.challenge")
-    webhook_verify_token = frappe.db.get_single_value(
-      "Meta Webhook Config", "webhook_verify_token"
-    )
-    if frappe.form_dict.get("hub.verify_token") != webhook_verify_token:
-      frappe.logger().error("Webhook validation failed: Verify token does not match")
-      frappe.throw("Verify token does not match")
-    
-    frappe.logger().info("Webhook validation successful")
-    return Response(hub_challenge, status=200)
-
-  except Exception as e:
-    frappe.logger().error(f"Error in webhook validation: {str(e)}", exc_info=True)
-    frappe.throw(f"Error in webhook validation: {str(e)}")
 
 def leadgen():
-  try:
-    # Log the incoming request body (POST)
-    data = frappe.request.json
-    frappe.logger().info(f"Meta webhook request log from local dict: {json.dumps(frappe.local.form_dict)}")
-    frappe.logger().info(f"Received POST request body: {json.dumps(data)}")
+    """ Process lead data from Meta Ads webhook """
+    try:
+        data = frappe.request.json
+        frappe.logger().info(f"Received POST request body: {json.dumps(data)}")
 
-    # Log the incoming request data in Meta Lead Logs
-    lead_log = frappe.new_doc("Meta Lead Logs")
-    lead_log.set('json', json.dumps(data))
+        # Log incoming payload
+        for entry in data.get("entry", []):
+            for change in entry.get("changes", []):
+                if change.get("field") == "leadgen":
+                    lead_data = change.get("value")
+                    leadgen_id = lead_data.get("leadgen_id")
+                    page_id = lead_data.get("page_id")
+                    form_id = lead_data.get("form_id")
+                    ad_id = lead_data.get("ad_id")
+                    created_time = lead_data.get("created_time")
 
-    # frappe.get_doc({
-    #   "doctype": "Meta Lead Logs",
-    #   "json": json.dumps(data)
-    # }).insert(ignore_permissions=True)
+                    # Create a log entry
+                    lead_log = frappe.new_doc("Meta Webhook Lead Logs")
+                    lead_log.update({
+                        "raw_payload": json.dumps(data),
+                        "received_time": now(),
+                        "leadgen_id": leadgen_id,
+                        "page_id": page_id,
+                        "ad_id": ad_id,
+                        "form_id": form_id,
+                        "created_time": convert_epoch_to_frappe_date(created_time),
+                        "processing_status": "Pending"
+                    })
 
-    frappe.logger().info("Processing Facebook request body")
-    process_lead_changes(data, lead_log)
-    return Response("Lead processed", status=200)
+                    # Check if the form is configured
+                    configured_form = frappe.db.exists("Meta Lead Form", {"form_id": form_id})
+                    config = get_lead_config(page_id, form_id)
 
-  except Exception as e:
-    frappe.logger().error(f"Error in processing lead: {str(e)}", exc_info=True)
-    return Response(f"Error in processing lead: {str(e)}", status=500)
+                    if configured_form:
+                        form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form_id})
+                        lead_log.set("lead_doctype", form_doc.lead_doctype_reference)
+
+                    if config:
+                       lead_log.set("config_reference", config.name)
+                       lead_log.set("campaign", config.campaign)
+
+                    if not configured_form:
+                        lead_log.set("processing_status", "Unconfigured")
+                        lead_log.set("error_message", "No configuration found for form_id in 'Meta Lead Form'")
+                    elif not config:
+                        # If configuration or form is not found, log as Unconfigured
+                        lead_log.set("processing_status", "Unconfigured")
+                        lead_log.set("error_message", "No configuration found for page_id and form_id in 'Meta Ads Webhook Config'")
+
+                    lead_log.insert(ignore_permissions=True)
+
+        return Response("Lead Logged", status=200)
+    except Exception as e:
+        frappe.logger().error(f"Error in Logging lead: {str(e)}", exc_info=True)
+        return Response(f"Error: {str(e)}", status=500)
+
+# def leadgen():
+#   try:
+#     # Log the incoming request body (POST)
+#     data = frappe.request.json
+#     frappe.logger().info(f"Meta webhook request log from local dict: {json.dumps(frappe.local.form_dict)}")
+#     frappe.logger().info(f"Received POST request body: {json.dumps(data)}")
+
+#     # Log the incoming request data in Meta Lead Logs
+#     lead_log = frappe.new_doc("Meta Lead Logs")
+#     lead_log.set('json', json.dumps(data))
+
+#     # frappe.get_doc({
+#     #   "doctype": "Meta Lead Logs",
+#     #   "json": json.dumps(data)
+#     # }).insert(ignore_permissions=True)
+
+#     frappe.logger().info("Processing Facebook request body")
+#     process_lead_changes(data, lead_log)
+#     return Response("Lead processed", status=200)
+
+#   except Exception as e:
+#     frappe.logger().error(f"Error in processing lead: {str(e)}", exc_info=True)
+#     return Response(f"Error in processing lead: {str(e)}", status=500)
 
 # def calculate_signature(payload):
 #     app_secret = frappe.conf.facebook_app_secret
@@ -85,6 +125,73 @@ def leadgen():
 #     sha_name, signature = signature.split('=')
 #     mac = hmac.new(bytes(frappe.conf.facebook_app_secret, 'utf-8'), msg=request.get_data(), digestmod=sha1)
 #     return hmac.compare_digest(mac.hexdigest(), signature)
+# def lead_exists(page_id, leadgen_id):
+#     """ Check if a lead already exists """
+#     try:
+#         frappe.get_doc("Meta Lead Logs", f"{page_id}_{leadgen_id}")
+#         return True
+#     except frappe.DoesNotExistError:
+#         return False
+
+
+def get_lead_config(page_id, form_id=None):
+    """ Retrieve lead configuration based on page_id (and optionally form_id) in Meta Ads Webhook Config """
+    filters = {"page": page_id}
+    config_name = frappe.get_all("Meta Ads Webhook Config", filters=filters, limit=1)
+    
+    if config_name:
+        config = frappe.get_doc("Meta Ads Webhook Config", config_name[0].name)
+        
+        # If a form_id is provided, ensure the form exists in the config's forms list
+        if form_id:
+            form_exists = any(form.form_id == form_id for form in config.forms_list)
+            if not form_exists:
+                return None  # Return None if the form_id does not exist in config
+
+        return config  # Return the full config document if checks pass
+
+    return None  # No configuration found for the page_id
+
+def convert_epoch_to_frappe_date(epoch_time):
+    """Convert epoch time to Frappe's date-time format."""
+    # Convert epoch time to a datetime object
+    dt = datetime.fromtimestamp(epoch_time)
+    # Format the datetime object to Frappe's preferred format
+    frappe_date = dt.strftime('%Y-%m-%d %H:%M:%S')
+    return frappe_date
+
+# def process_lead_changes(data, lead_log):
+#     """ Process entries and changes in webhook data """
+#     if "entry" not in data:
+#         return
+
+#     for entry in data["entry"]:
+#         if "changes" not in entry:
+#             continue
+
+#         for change in entry["changes"]:
+#             if change["field"] == "leadgen":
+#                 leadgen_id = change["value"].get("leadgen_id")
+#                 page_id = change["value"].get("page_id")
+
+#                 if not leadgen_id or not page_id:
+#                     continue
+
+#                 if lead_exists(page_id, leadgen_id):
+#                     frappe.logger().info(f"Lead {leadgen_id} already exists!")
+#                     return
+
+#                 lead_log.set("leadgen_id", leadgen_id)
+#                 lead_log.set("page_id", page_id)
+                
+#                 config = get_lead_config(page_id)
+#                 if config:
+#                     lead_log.set("meta_ads_config", config.name)
+#                     lead_log.set("lead_doctype_reference", config.lead_doctype)
+#                     lead_log.insert(ignore_permissions=True)
+#                     fetch_lead_data(leadgen_id, config, lead_log)
+#                 else:
+#                     frappe.logger().error(f"No lead configuration found for page_id: {page_id}")
 
 def process_lead_changes(data, lead_log):
   try:
