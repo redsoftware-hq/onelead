@@ -244,12 +244,12 @@ def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=No
         if ad_id:
             # Fetch forms based on the specific ad
             ad = Ad(ad_id)
-            ad_data = ad.api_get(fields=['id', 'name', 'adcreatives.limit(10){object_story_spec}'])
+            ad_data = ad.api_get(fields=['id', 'name', 'adcreatives.limit(100){object_story_spec}'])
             forms = extract_forms_from_ad(ad_data)
         else:
             # Fetch forms based on the campaign
             campaign = Campaign(campaign_id)
-            ads_data = campaign.get_ads(fields=['id', 'name', 'adcreatives{object_story_spec}'], params={"limit": 100})
+            ads_data = campaign.get_ads(fields=['id', 'name', 'adcreatives.limit(100){object_story_spec}'], params={"limit": 100})
             forms = []
             for ad_data in ads_data:
                 forms.extend(extract_forms_from_ad(ad_data))

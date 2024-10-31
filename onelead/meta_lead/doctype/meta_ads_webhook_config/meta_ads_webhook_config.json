@@ -40,7 +40,6 @@
   {
    "fieldname": "section_break_ifha",
    "fieldtype": "Section Break",
-   "hidden": 1,
    "label": "Access Tokens"
   },
   {
@@ -52,6 +51,7 @@
   {
    "fieldname": "page_token",
    "fieldtype": "Password",
+   "hidden": 1,
    "label": "Page Token",
    "length": 500
   },
@@ -130,7 +130,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-30 20:36:46.054779",
+ "modified": "2024-10-31 08:31:10.365817",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ads Webhook Config",
