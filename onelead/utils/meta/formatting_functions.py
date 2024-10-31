@@ -1,21 +1,38 @@
 import re
 from datetime import datetime
 from frappe.utils import now
-
+import phonenumbers
+    
 def format_phone_number(phone_number, code="+1"):
-    """Format phone numbers to international format."""
-    # Remove all non-numeric characters except the plus at the start
+    """
+    Format phone numbers to 'country code - local number' format.
+    Args:
+        phone_number (str): The raw phone number string.
+        default_region (str): Default region code if the country code is missing.
+    Returns:
+        str: Formatted phone number with 'country code - local number'.
+    """
+    # Clean default_code by removing non-numeric characters
+    code = re.sub(r'[^\d]', '', code)
+
+    # Remove all non-numeric characters except the plus sign in phone_number
     cleaned_number = re.sub(r'[^\d+]', '', phone_number)
     
     # If the number starts without '+', assume it's missing the country code
     if not cleaned_number.startswith('+'):
-        cleaned_number = f"{code}{cleaned_number}"
+        cleaned_number = f"+{code}{cleaned_number}"
     
-    # Format with spaces for readability
-    # Example: +1234567890 -> +1 234 567 890
-    formatted_number = re.sub(r"(\+?\d{1,3})(\d{3})(\d{3})(\d+)", r"\1 \2 \3 \4", cleaned_number)
-    
-    return formatted_number
+    try:
+        # Parse the phone number
+        parsed_number = phonenumbers.parse(cleaned_number)
+        
+        # Get the country code and national number
+        country_code = parsed_number.country_code
+        national_number = parsed_number.national_number
+        
+        return f"+{country_code}-{national_number}"
+    except phonenumbers.NumberParseException:
+        return "Invalid number"
 
 def calculate_age(dob_str, dob_format="%Y-%m-%d"):
     """Calculate age given a date of birth string."""
