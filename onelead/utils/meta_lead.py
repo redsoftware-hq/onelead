@@ -96,23 +96,23 @@ def create_lead_log(data, lead_data):
     lead_log.insert(ignore_permissions=True)
 
 
-def get_lead_config(page_id, form_id=None):
+def get_lead_config(page_id, form_id):
     """ Retrieve lead configuration based on page_id (and optionally form_id) in Meta Ads Webhook Config """
     filters = {"page": page_id}
-    config_name = frappe.get_all("Meta Ads Webhook Config", filters=filters, limit=1)
+    config_list = frappe.get_all("Meta Ads Webhook Config", filters=filters)
     
-    if config_name:
-        config = frappe.get_doc("Meta Ads Webhook Config", config_name[0].name)
+    if config_list:
+        for config in config_list:
+            config_doc = frappe.get_doc("Meta Ads Webhook Config", config.name)
 
-        # If a form_id is provided, ensure the form exists in the config's forms list
-        if form_id:
-            form_exists = any(form.meta_lead_form == form_id for form in config.forms_list)
-            if not form_exists:
-                return None  # Return None if the form_id does not exist in config
+            # Ensure the form exists in the config's forms list
+            form_exists = any(form.meta_lead_form == form_id for form in config_doc.forms_list)
+            # frappe.logger().info(f"Form Exists in Config {config_doc.name}? {form_exists}")
 
-        return config  # Return the full config document if checks pass
+            if form_exists:
+                return config_doc  # Return config if found
 
-    return None  # No configuration found for the page_id
+    return None  # No configuration found for the page_id and form_id
 
 def convert_epoch_to_frappe_date(epoch_time):
     """Convert epoch time to Frappe's date-time format."""
