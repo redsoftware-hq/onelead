@@ -10,13 +10,17 @@
   "form_id",
   "form_name",
   "status",
-  "locale",
   "column_break_asvw",
   "campaign",
   "ads",
+  "locale",
   "form_mapping_section",
   "lead_doctype_reference",
-  "mapping"
+  "mapping",
+  "form_assign_section",
+  "assign_to",
+  "executive",
+  "team"
  ],
  "fields": [
   {
@@ -87,11 +91,37 @@
    "label": "Form Id",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "form_assign_section",
+   "fieldtype": "Section Break",
+   "label": "Form Assign"
+  },
+  {
+   "default": "User",
+   "fieldname": "assign_to",
+   "fieldtype": "Select",
+   "label": "Assign To",
+   "options": "User\nTeam"
+  },
+  {
+   "depends_on": "eval:doc.assign_to == \"User\"",
+   "fieldname": "executive",
+   "fieldtype": "Link",
+   "label": "Executive",
+   "options": "Executive"
+  },
+  {
+   "depends_on": "eval:doc.assign_to == \"Team\"",
+   "fieldname": "team",
+   "fieldtype": "Link",
+   "label": "Team",
+   "options": "Campaign Team"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-31 02:01:52.780324",
+ "modified": "2024-11-07 03:33:06.779992",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form",
