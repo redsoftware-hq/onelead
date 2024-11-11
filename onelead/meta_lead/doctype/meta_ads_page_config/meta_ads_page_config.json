@@ -1,0 +1,123 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{page}",
+ "creation": "2024-11-11 20:55:59.512388",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_dkvj",
+  "page",
+  "page_access_token",
+  "column_break_aqji",
+  "status",
+  "section_break_cscl",
+  "lead_doctype_reference",
+  "lead_assign",
+  "column_break_nakt",
+  "assignee_doctype",
+  "assign_to",
+  "section_break_tlbp",
+  "form_list"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_dkvj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "page",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Page",
+   "options": "Meta Page",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_tlbp",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "form_list",
+   "fieldtype": "Table",
+   "label": "Form List",
+   "options": "Meta Campaign Form List"
+  },
+  {
+   "fieldname": "column_break_aqji",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Connected\nDisconnected"
+  },
+  {
+   "fieldname": "section_break_cscl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "description": "Assign lead to specified DOCTYPE (User, Team) after Lead creation.",
+   "fieldname": "lead_assign",
+   "fieldtype": "Check",
+   "label": "Lead Assign"
+  },
+  {
+   "fieldname": "column_break_nakt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assignee_doctype",
+   "fieldtype": "Link",
+   "label": "Assignee Doctype",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "assign_to",
+   "fieldtype": "Dynamic Link",
+   "label": "Assign To",
+   "options": "assignee_doctype"
+  },
+  {
+   "fieldname": "page_access_token",
+   "fieldtype": "Password",
+   "label": "Page Access Token",
+   "length": 500,
+   "read_only": 1
+  },
+  {
+   "fieldname": "lead_doctype_reference",
+   "fieldtype": "Link",
+   "label": "Lead Doctype Reference",
+   "options": "DocType"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-12 01:55:12.757380",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Ads Page Config",
+ "naming_rule": "Expression",
+ "nsm_parent_field": "parent_page",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

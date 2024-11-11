@@ -11,17 +11,24 @@
   "app_id",
   "app_secret",
   "app_name",
-  "user_access_token",
   "connect_facebook",
-  "is_enabled"
+  "is_enabled",
+  "page_flow",
+  "column_break_blmf",
+  "user_access_token",
+  "user_id",
+  "token_expiry",
+  "is_token_valid"
  ],
  "fields": [
   {
+   "default": "https://graph.facebook.com",
    "fieldname": "meta_url",
    "fieldtype": "Data",
    "label": "Meta URL"
   },
   {
+   "default": "v20.0",
    "fieldname": "meta_api_version",
    "fieldtype": "Data",
    "label": "Meta API Version "
@@ -62,12 +69,41 @@
    "fieldtype": "Password",
    "label": "User Access Token",
    "length": 500
+  },
+  {
+   "default": "1",
+   "fieldname": "page_flow",
+   "fieldtype": "Check",
+   "label": "Page Flow"
+  },
+  {
+   "fieldname": "column_break_blmf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "user_id",
+   "fieldtype": "Data",
+   "label": "User Id",
+   "read_only": 1
+  },
+  {
+   "fieldname": "token_expiry",
+   "fieldtype": "Datetime",
+   "label": "Token Expiry",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_token_valid",
+   "fieldtype": "Check",
+   "label": "Is Token Valid",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-29 23:11:25.219235",
+ "modified": "2024-11-12 00:13:30.123281",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Config",

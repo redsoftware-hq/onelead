@@ -1,0 +1,273 @@
+// Copyright (c) 2024, Redsoftware Solutions and contributors
+// For license information, please see license.txt
+
+frappe.ui.form.on("Meta Ads Page Config", {
+  onload: function (frm) {
+    // Hide or show Assignee fields based on the checkbox value
+    frm.toggle_display('assignee_doctype', frm.doc.lead_assign);
+    frm.toggle_display('assign_to', frm.doc.lead_assign);
+  },
+
+  lead_assign: function (frm) {
+    // Show or hide Assignee fields based on checkbox selection
+    frm.toggle_display('assignee_doctype', frm.doc.lead_assign);
+    frm.toggle_display('assign_to', frm.doc.lead_assign);
+  },
+
+	refresh(frm) {
+
+	},
+});
+
+
+frappe.ui.form.on("Meta Campaign Form List", {
+  quick_map: function (frm, cdt, cdn) {
+    console.log("Quick Map button clicked");
+    let row = locals[cdt][cdn];
+    //  mandatory fieds of lead_doctype for validation
+    let mandatory_fields = [];
+
+    if (!row.meta_lead_form) {
+      frappe.msgprint(__('Please select a Meta Lead Form before mapping.'));
+      return;
+    }
+
+    if (row) {
+      console.log("Row data:", row);
+    } else {
+      console.log("Row data not found");
+    }
+
+
+    // Fetch DocType "Meta Lead Form" data, to populate mapping form.
+    frappe.call({
+      method: 'frappe.client.get',
+      args: {
+        doctype: 'Meta Lead Form',
+        name: row.meta_lead_form
+      },
+      callback: function (r) {
+        if (r.message) {
+          const metaLeadForm = r.message;
+          const mappings = metaLeadForm.mapping || [];
+
+          console.log("mapping...", mappings)
+
+          // Dialog to display mappings
+          let d = new frappe.ui.Dialog({
+            size: 'extra-large',
+            title: 'Quick Map Lead Fields',
+            fields: [
+              {
+                label: 'Lead DocType Reference',
+                fieldname: 'lead_doctype',
+                fieldtype: 'Link',
+                options: 'DocType',
+                // Try to take form lead doc ref first, if not found then from parent lead doc ref. 
+                default: metaLeadForm.lead_doctype_reference || frm.doc.lead_doctype_reference,
+                reqd: 1,
+                change: function () {
+                  let lead_doctype = d.get_value('lead_doctype');
+                  if (lead_doctype) {
+                    // Fetch fields from the selected Lead DocType
+                    frappe.call({
+                      method: 'frappe.client.get',
+                      args: {
+                        doctype: 'DocType',
+                        name: lead_doctype
+                      },
+                      callback: function (r) {
+                        if (r.message) {
+                          // Filter fields based on mappable field types (Data, Link, etc.)
+                          let mappable_fields = r.message.fields
+                            .filter(field => ['Data', 'Phone', 'Link', 'Select', 'Int', 'Float', 'Date'].includes(field.fieldtype))
+                            .map(field => field.fieldname);
+
+                          // Get mandatory fields
+                          mandatory_fields = r.message.fields
+                            .filter(field => field.reqd)
+                            .map(field => field.fieldname);
+
+                          // Update lead_doctype_field options in the mapping table
+                          d.fields_dict.mapping.grid.update_docfield_property(
+                            'lead_doctype_field', 'options', mappable_fields.join('\n')
+                          );
+                          d.fields_dict.mapping.grid.refresh();  // Refresh to apply new options
+                        }
+                      }
+                    });
+                  }
+                }
+              },
+              {
+                fieldtype: 'Section Break',
+                label: 'Field Mappings'
+              },
+              {
+                fieldname: 'mapping',
+                label: 'Mapping Table',
+                fieldtype: 'Table',
+                options: 'Meta Lead Form Mapping', // Fields Mapping DocType
+                fields: [
+                  {
+                    label: 'Meta Field',
+                    fieldname: 'meta_field',
+                    fieldtype: 'Data',
+                    in_list_view: 1
+                  },
+                  {
+                    label: 'Lead DocType Field',
+                    fieldname: 'lead_doctype_field',
+                    fieldtype: 'Select',
+                    in_list_view: 1
+                  },
+                  {
+                    label: 'Default Value',
+                    fieldname: 'default_value',
+                    fieldtype: 'Data',
+                    in_list_view: 1
+                  },
+                  {
+                    label: 'Formatting Function',
+                    fieldname: 'formatting_function',
+                    fieldtype: 'Code',
+                    in_list_view: 1
+                  }
+                ]
+              }
+            ],
+            primary_action_label: 'Save Mappings',
+            primary_action: function (data) {
+              // Validation for mandatory fields in the mapping
+              let missing_fields = mandatory_fields.filter(mandatory_field =>
+                !data.mapping.some(mapping => mapping.lead_doctype_field === mandatory_field)
+              );
+
+              if (missing_fields.length > 0) {
+                frappe.show_alert({
+                  message: __('Warning: The following mandatory fields are missing in the mapping table: ') +
+                    missing_fields.join(', '),
+                  indicator: 'orange'
+                }, 10); // Longer display of Warning as feature is WIP and don't want to block by Error.
+
+                // Stop the save action
+                // return;
+              }
+
+              // Validations for mapping table
+              let validation_failed = false;
+
+              data.mapping.forEach(mapping => {
+                // Only validate rows where `lead_doctype_field` is populated
+                if (mapping.lead_doctype_field) {
+                  if (!mapping.meta_field && !mapping.default_value) {
+                    validation_failed = true;
+                    frappe.msgprint(__('Each Lead DocType Field with a value must have either a Meta Field or a Default Value.'));
+                  }
+                }
+              });
+
+              if (validation_failed) {
+                return;  // Stop the save action if validation fails
+              }
+
+              console.log("Mapped data before update:", data.mapping);
+
+              // metaLeadForm.mapping = data.mapping;
+              metaLeadForm.mapping = []
+
+              // Add each entry from `data.mapping` to `latest_meta_lead_form.mapping`
+              data.mapping.forEach(mapping_entry => {
+                // Create a new mapping row object
+                const child_row = {
+                  meta_field: mapping_entry.meta_field,
+                  lead_doctype_field: mapping_entry.lead_doctype_field,
+                  default_value: mapping_entry.default_value,
+                  formatting_function: mapping_entry.formatting_function
+                };
+
+                // Push the new row directly into the `mapping` array
+                metaLeadForm.mapping.push(child_row);
+              });
+              metaLeadForm.lead_doctype_reference = data.lead_doctype;
+
+              // Save the updated document
+              frappe.call({
+                method: 'frappe.client.save',
+                args: {
+                  doc: metaLeadForm
+                },
+                callback: function (save_response) {
+                  if (save_response.message) {
+                    frappe.msgprint(__('Fields mapped and saved successfully.'));
+                    row.status = 'Mapped';
+                    frm.refresh_field('forms_list');
+                  }
+                }
+              });
+
+              // Update mappings and lead doctype in "Meta Lead Form"
+              // frappe.call({
+              //   method: 'frappe.client.get',
+              //   args: {
+              //     doctype: 'Meta Lead Form',
+              //     name: metaLeadForm.name  // row.meta_lead_form
+              //   },
+              //   callback: function (refetch_response) {
+              //     if (refetch_response.message) {
+              //       let latest_meta_lead_form = refetch_response.message;
+
+              //       console.log(data.mapping)
+
+              //       // Update only necessary fields
+              //       latest_meta_lead_form.lead_doctype_reference = data.lead_doctype;
+              //       latest_meta_lead_form.mapping = data.mapping;
+
+              //       // Save the updated document
+              //       frappe.call({
+              //         method: 'frappe.client.save',
+              //         args: {
+              //           doc: latest_meta_lead_form
+              //         },
+              //         callback: function (save_response) {
+              //           if (save_response.message) {
+              //             frappe.msgprint(__('Fields mapped and saved successfully.'));
+              //             row.status = 'Mapped';
+              //             frm.refresh_field('forms_list');
+              //           }
+              //         }
+              //       });
+              //     } else {
+              //       frappe.msgprint(__('Failed to fetch the latest document. Please try again.'));
+              //     }
+              //   }
+              // });
+
+
+              d.hide();
+            }
+          });
+
+          console.log(d.fields_dict.mapping.grid.doctype)
+          // populate mapping table with existing data.
+          const mappingTable = d.fields_dict.mapping.grid.get_data();
+
+          console.log("Mapping Table", mappingTable)
+
+          d.fields_dict.mapping.df.data = mappings.map(mapping => ({
+            meta_field: mapping.meta_field,
+            lead_doctype_field: mapping.lead_doctype_field,
+            default_value: mapping.default_value,
+            formatting_function: mapping.formatting_function
+          }));
+
+          d.fields_dict.mapping.grid.refresh();  // Refresh the table in the dialog
+          d.show();
+        } else {
+          frappe.msgprint(__('Meta Lead Form not found.'));
+        }
+      }
+    });
+
+  }
+})

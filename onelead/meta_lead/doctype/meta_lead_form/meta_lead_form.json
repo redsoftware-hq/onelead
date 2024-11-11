@@ -14,13 +14,13 @@
   "campaign",
   "ads",
   "locale",
+  "page",
   "form_mapping_section",
   "lead_doctype_reference",
   "mapping",
   "form_assign_section",
   "assign_to",
-  "executive",
-  "team"
+  "executive"
  ],
  "fields": [
   {
@@ -51,7 +51,8 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
-   "label": "Status"
+   "label": "Status",
+   "options": "\nACTIVE"
   },
   {
    "fieldname": "locale",
@@ -112,16 +113,15 @@
    "options": "Executive"
   },
   {
-   "depends_on": "eval:doc.assign_to == \"Team\"",
-   "fieldname": "team",
+   "fieldname": "page",
    "fieldtype": "Link",
-   "label": "Team",
-   "options": "Campaign Team"
+   "label": "Page",
+   "options": "Meta Page"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-07 03:33:06.779992",
+ "modified": "2024-11-12 01:36:48.175916",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form",

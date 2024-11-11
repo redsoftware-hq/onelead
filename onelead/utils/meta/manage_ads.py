@@ -1,11 +1,130 @@
 import frappe
-from datetime import datetime
+import requests
+from datetime import datetime, timedelta
 from facebook_business.api import FacebookAdsApi
 from facebook_business.adobjects.user import User
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.leadgenform import LeadgenForm
+from facebook_business.adobjects.page import Page
+
+def is_token_short_lived(doc, user_access_token, app_access_token):
+    url = f"{doc.meta_url}/debug_token?input_token={user_access_token}&access_token={app_access_token}"
+    response = requests.get(url)
+    data = response.json()
+
+    if not data.get('data', {}).get("is_valid"):
+        frappe.throw("User access token is invalid.")
+    
+    token_data = data['data']
+    expires_at_timestamp = token_data.get("expires_at")
+
+    expires_at = datetime.fromtimestamp(expires_at_timestamp) if expires_at_timestamp else None
+    expires_in_days = (expires_at - datetime.now()).days if expires_at else None
+    frappe_formatted_expires_at = expires_at.strftime('%Y-%m-%d %H:%M:%S') if expires_at else "N/A"
+
+    is_short_lived = expires_in_days and expires_in_days < 30
+    data = {
+        "is_short_lived": is_short_lived,
+        "is_valid": token_data["is_valid"],
+        "user_id": data.get("user_id"),
+    }
+
+    return data
+
+def get_long_lived_user_token(doc, user_access_token, app_secret, app_id):
+    """Function to exchange a short-lived user token for a long-lived token."""
+    try:
+        url = f"{doc.meta_url}/{doc.meta_api_version}/oauth/access_token"
+        params = {
+            "grant_type": "fb_exchange_token",
+            "client_id": app_id,
+            "client_secret": app_secret,
+            "fb_exchange_token": user_access_token
+        }
+        long_token_response = requests.get(url, params=params)
+        long_token_data = long_token_response.json()
+        if "access_token" in long_token_data:
+            # Update the token and new expiration
+            long_lived_token = long_token_data["access_token"]
+            expires_in_days = long_token_data.get("expires_in") // (60 * 60 * 24)  # Convert seconds to days
+            new_expiration_date = datetime.now() + timedelta(days=expires_in_days)
+            frappe_formatted_expires_at = new_expiration_date.strftime('%Y-%m-%d %H:%M:%S')
+
+            doc.user_access_token = long_lived_token
+            doc.token_expiry = frappe_formatted_expires_at
+            doc.is_valid = 1
+            doc.save(ignore_permissions=True)
+
+            return {
+                "access_token": long_lived_token,
+                "expires_at": frappe_formatted_expires_at,
+                "expires_in_days": expires_in_days,
+                "message": "Token converted to long-lived token."
+            }
+        else:
+            frappe.throw("Failed to generate a long-lived token.")
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Token Exchange Error")
+        frappe.throw(f"Failed to exchange token: {str(e)}")
+
+def install_app_and_get_page_token(user_access_token, page_id):
+    # Initialize the API with the user access token
+    FacebookAdsApi.init(access_token=user_access_token)
+    
+    # Create a Page object
+    page = Page(page_id)
+    
+    # Install the app on the page
+    page.create_subscribed_app(params={"subscribed_fields": ["leadgen"]})
+    print(f"App successfully installed on page {page_id}.")
+    
+    # Retrieve the page access token
+    page_info = page.api_get(fields=['access_token'])
+    page_access_token = page_info.get('access_token')
+    
+    if page_access_token:
+        print(f"Page Access Token: {page_access_token}")
+        return page_access_token
+    else:
+        print("Failed to retrieve the Page Access Token.")
+        return None
+
+# NOTE: By default page access_token are long lived and without expiry.
+# def get_long_lived_page_token(doc, user_long_token):
+#     try:
+#         url = f"{doc.meta_url}/{doc.meta_api_version}/{doc.user_id}/accounts"
+#         params = {
+#             "access_token": user_long_token,
+#         }
+
+#         long_token_response = requests.get(url, params=params)
+#         long_token_data = long_token_response.json()
+
+#         if long_token_response.status_code == 200:
+#             long_token_data = long_token_response.json()
+#             # Extract the Page Access Token
+#             data = long_token_data.get("data", [])
+#             if len(data) > 0:
+#                 page_access_token = data[0].get("access_token")
+
+#             if page_access_token:
+#                 return page_access_token
+#             else:
+#                 raise Exception("Access token not found in the response.")
+#         else:
+#             # Handle errors
+#             error_info = long_token_response.json().get("error", {})
+#             error_message = error_info.get("message", "An error occurred.")
+#             raise Exception(f"Error {long_token_response.status_code}: {error_message}")
+
+#     except Exception as e:
+#         # Handle errors and print them
+#         frappe.throw(f"Error retrieving Page Access Token: {str(e)}")
+#         raise
+
+
 
 @frappe.whitelist()
 def get_adaccounts():
@@ -21,12 +140,21 @@ def get_adaccounts():
     meta_config = frappe.get_single("Meta Webhook Config")
     app_id = meta_config.app_id
     app_secret = meta_config.get_password("app_secret")  # Automatically decrypts
-    user_token = meta_config.get_password("user_access_token")  
+    user_token = meta_config.get_password("user_access_token")
+    page_flow = meta_config.page_flow
 
     # Check if all fields has data.
     if not app_id or not app_secret or not user_token:
         frappe.throw("App ID, App Secret, and User Token must all be provided in Meta Webhook Config.")
-    
+
+    token_data = is_token_short_lived(meta_config, user_token, app_secret)
+    meta_config.user_id = token_data["user_id"]
+    if token_data["is_short_token"]:
+        token_data = get_long_lived_user_token(meta_config, user_token, app_secret, app_id)
+        user_token = token_data["access_token"]
+    else:
+        meta_config.is_valid = token_data["is_valid"]
+        meta_config.save(ignore_permissions=True)
 
     FacebookAdsApi.init(app_id, app_secret, user_token)
     
@@ -102,6 +230,20 @@ def get_adaccounts():
                     "page_id": page_id
                 })
                 page_doc.save(ignore_permissions=True)
+
+                # If page_flow is enabled, create/update Meta Ads Page Config and get page access token
+                if page_flow:
+                    # Install app on page and get page access token
+                    page_access_token = install_app_and_get_page_token(user_token, page_id)
+                    
+                    if page_access_token:
+                        # Create or update Meta Ads Page Config with page_id and page access token
+                        page_config_doc = frappe.get_doc("Meta Ads Page Config", {"page": page_id}) if frappe.db.exists("Meta Ads Page Config", {"page": page_id}) else frappe.new_doc("Meta Ads Page Config")
+                        page_config_doc.update({
+                            "page": page_id,
+                            "page_access_token": page_access_token
+                        })
+                        page_config_doc.save(ignore_permissions=True)
 
             # Save the Ad Account
             ad_account_doc.save(ignore_permissions=True)
@@ -276,6 +418,71 @@ def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=No
             "message": "Forms fetched successfully",
             "data": forms
         }
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Meta API Error")
+        frappe.throw(f"Failed to fetch forms: {str(e)}")
+
+
+@frappe.whitelist()
+def fetch_forms_based_on_page(page_id):
+    # Check for user session
+    if not frappe.session.user or frappe.session.user == 'Guest':
+        frappe.throw("You must be logged in to access this function.")
+    
+    # Retrieve the Meta Ads Page Config to access the page token
+    page_config = frappe.get_doc("Meta Ads Page Config", {"page": page_id})
+    page_access_token = page_config.page_access_token
+    
+    if not page_access_token:
+        frappe.throw("Page Access Token is not available. Ensure the page is properly connected.")
+
+    # Initialize Facebook API with the page access token
+    FacebookAdsApi.init(access_token=page_access_token)
+    
+    try:
+        # Initialize the Page object
+        page = Page(page_id)
+        params = {'limit': 100}
+        total_fetched = 0
+        form_ids = []
+
+        # Fetch the lead generation forms from the current page
+        leadgen_forms = page.get_leadgen_forms(fields=["id", "name", "status"], params=params)
+        
+        # Paginate through lead generation forms
+        while True:
+            # Store fetched forms in Meta Lead Form DocType
+            for form in leadgen_forms:
+                form_id = form["id"]
+                form_name = form.get("name", "Unnamed Form")
+                status = form.get("status", "")
+
+                # Create or update the form in Meta Lead Form DocType
+                form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form_id}) if frappe.db.exists("Meta Lead Form", {"form_id": form_id}) else frappe.new_doc("Meta Lead Form")
+                form_doc.update({
+                    "form_id": form_id,
+                    "form_name": form_name,
+                    "status": status,
+                    "page": page_id
+                })
+                form_doc.save(ignore_permissions=True)
+                form_ids.append({
+                    "form_name": form_name,
+                    "form_id": form_id
+                })
+                
+            # Update total fetched count
+            total_fetched += len(leadgen_forms)
+            
+            # Check if there are more forms to fetch
+            if leadgen_forms.load_next_page():
+                leadgen_forms = leadgen_forms.next()
+            else:
+                break  # Exit loop if there are no more pages
+        
+        frappe.db.commit()
+        return form_ids
 
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Meta API Error")
