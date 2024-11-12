@@ -5,7 +5,7 @@ from frappe.utils import now
 from datetime import datetime
 from werkzeug.wrappers import Response
 import frappe.utils
-from hashlib import sha1
+import hashlib
 import hmac
 from frappe.utils.password import get_decrypted_password
 
@@ -30,11 +30,40 @@ def validate():
         return Response(f"Error in webhook validation: {str(e)}", status=500)
 
 
+def verify_signature(signature, payload, secret):
+    """Verify the payload signature using HMAC SHA256"""
+    if not signature:
+        return False
+
+    # Ensure signature starts with "sha256=" as expected
+    if not signature.startswith("sha256="):
+        return False
+
+    # Compute HMAC SHA256
+    computed_hash = hmac.new(
+        bytes(secret, 'utf-8'),
+        msg=bytes(payload, 'utf-8'),
+        digestmod=hashlib.sha256
+    ).hexdigest()
+
+    # Compare computed signature with the one from headers
+    return hmac.compare_digest(signature.split("=")[1], computed_hash)
+
 def leadgen():
     """ Process lead data from Meta Ads webhook """
     try:
         data = frappe.request.json
         frappe.logger().info(f"Received POST request body: {json.dumps(data)}")
+
+        # Validate payload with app secret
+        conf = frappe.get_doc("Meta Webhook Config")
+        app_secret = get_decrypted_password("Meta Webhook Config", conf.name, "app_secret")
+        # app_secret = frappe.db.get_single_value("Meta Webhook Config", "app_secret")
+        signature = frappe.request.headers.get("X-Hub-Signature-256")
+
+        # if not verify_signature(signature, json.dumps(data), app_secret):
+        #     frappe.logger().warning("Invalid signature. Payload verification failed.")
+        #     return Response("Invalid signature", status=403)
 
         # Log incoming payload
         for entry in data.get("entry", []):
@@ -49,7 +78,7 @@ def leadgen():
                         continue
                     
                     # log entry
-                    create_lead_log(data, lead_data)
+                    create_lead_log(data, lead_data, conf)
 
         return Response("Lead Logged", status=200)
     except Exception as e:
@@ -57,7 +86,7 @@ def leadgen():
         return Response(f"Error: {str(e)}", status=500)
 
 
-def create_lead_log(data, lead_data):
+def create_lead_log(data, lead_data, global_conf):
     """Create a log entry for the incoming lead"""
     leadgen_id = lead_data.get("leadgen_id")
     page_id = lead_data.get("page_id")
@@ -78,7 +107,9 @@ def create_lead_log(data, lead_data):
     })
 
     configured_form = frappe.db.exists("Meta Lead Form", {"form_id": form_id})
-    config = get_lead_config(page_id, form_id)
+    config = get_lead_config(page_id, form_id, global_conf)
+    lead_log.config_doctype_name = "Meta Ads Page Config" if global_conf.page_flow else "Meta Ads Webhook Config"
+
 
     if configured_form:
         form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form_id})
@@ -86,7 +117,8 @@ def create_lead_log(data, lead_data):
 
     if config:
         lead_log.config_reference = config.name
-        lead_log.campaign = config.campaign
+        if config.get('campaign', None):
+            lead_log.campaign = config.campaign
     else:
         lead_log.processing_status = "Unconfigured"
         lead_log.error_message = ("No configuration found for form_id in 'Meta Lead Form'" 
@@ -96,14 +128,16 @@ def create_lead_log(data, lead_data):
     lead_log.insert(ignore_permissions=True)
 
 
-def get_lead_config(page_id, form_id):
+def get_lead_config(page_id, form_id, global_conf):
     """ Retrieve lead configuration based on page_id (and optionally form_id) in Meta Ads Webhook Config """
     filters = {"page": page_id}
-    config_list = frappe.get_all("Meta Ads Webhook Config", filters=filters)
+    doctype_name = "Meta Ads Page Config" if global_conf.page_flow else "Meta Ads Webhook Config"
     
+    config_list = frappe.get_all(doctype_name, filters=filters)
+
     if config_list:
         for config in config_list:
-            config_doc = frappe.get_doc("Meta Ads Webhook Config", config.name)
+            config_doc = frappe.get_doc(doctype_name, config.name)
 
             # Ensure the form exists in the config's forms list
             form_exists = any(form.meta_lead_form == form_id for form in config_doc.forms_list)

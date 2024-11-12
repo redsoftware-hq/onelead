@@ -8,7 +8,7 @@
  "field_order": [
   "page_name",
   "page_id",
-  "page_token"
+  "page_access_token"
  ],
  "fields": [
   {
@@ -36,15 +36,15 @@
   {
    "allow_in_quick_entry": 1,
    "description": "A long-lived token signed by a user with following permissions: pages_show_list\nads_management\nads_read\nleads_retrieval\npages_read_engagement\npages_manage_metadata\npages_manage_ads",
-   "fieldname": "page_token",
-   "fieldtype": "Data",
-   "label": "Page Token",
+   "fieldname": "page_access_token",
+   "fieldtype": "Password",
+   "label": "Page Access Token",
    "length": 500
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-30 18:32:02.207459",
+ "modified": "2024-11-13 02:03:15.329775",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Page",

@@ -19,7 +19,8 @@
    "in_list_view": 1,
    "in_preview": 1,
    "in_standard_filter": 1,
-   "label": "Meta Field"
+   "label": "Meta Field",
+   "length": 500
   },
   {
    "allow_in_quick_entry": 1,
@@ -47,7 +48,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-29 21:31:55.103603",
+ "modified": "2024-11-13 01:56:28.812630",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form Mapping",

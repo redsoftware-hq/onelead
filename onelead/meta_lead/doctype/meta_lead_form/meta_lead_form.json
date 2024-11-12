@@ -10,17 +10,18 @@
   "form_id",
   "form_name",
   "status",
+  "locale",
   "column_break_asvw",
   "campaign",
   "ads",
-  "locale",
   "page",
+  "form_assign_section",
+  "assignee_doctype",
+  "column_break_esiv",
+  "assign_to",
   "form_mapping_section",
   "lead_doctype_reference",
-  "mapping",
-  "form_assign_section",
-  "assign_to",
-  "executive"
+  "mapping"
  ],
  "fields": [
   {
@@ -37,10 +38,10 @@
    "fieldtype": "Column Break"
   },
   {
-   "fetch_from": "ads.campaign",
    "fieldname": "campaign",
-   "fieldtype": "Read Only",
-   "label": "Campaign"
+   "fieldtype": "Link",
+   "label": "Campaign",
+   "options": "Meta Campaign"
   },
   {
    "fieldname": "ads",
@@ -51,8 +52,12 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
    "label": "Status",
-   "options": "\nACTIVE"
+   "options": "\nACTIVE\nARCHIVED"
   },
   {
    "fieldname": "locale",
@@ -99,29 +104,32 @@
    "label": "Form Assign"
   },
   {
-   "default": "User",
    "fieldname": "assign_to",
-   "fieldtype": "Select",
+   "fieldtype": "Dynamic Link",
    "label": "Assign To",
-   "options": "User\nTeam"
-  },
-  {
-   "depends_on": "eval:doc.assign_to == \"User\"",
-   "fieldname": "executive",
-   "fieldtype": "Link",
-   "label": "Executive",
-   "options": "Executive"
+   "options": "assignee_doctype"
   },
   {
    "fieldname": "page",
    "fieldtype": "Link",
    "label": "Page",
    "options": "Meta Page"
+  },
+  {
+   "default": "User",
+   "fieldname": "assignee_doctype",
+   "fieldtype": "Link",
+   "label": "Assignee Doctype",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "column_break_esiv",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-12 01:36:48.175916",
+ "modified": "2024-11-13 02:04:24.849522",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form",

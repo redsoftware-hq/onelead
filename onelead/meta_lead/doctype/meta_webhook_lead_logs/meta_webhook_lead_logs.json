@@ -18,6 +18,7 @@
   "reference_section",
   "campaign",
   "config_reference",
+  "config_doctype_name",
   "column_break_elsw",
   "lead_doc_reference",
   "lead_doctype",
@@ -99,10 +100,10 @@
   },
   {
    "fieldname": "config_reference",
-   "fieldtype": "Link",
+   "fieldtype": "Dynamic Link",
    "in_standard_filter": 1,
    "label": "Config Reference",
-   "options": "Meta Ads Webhook Config"
+   "options": "config_doctype_name"
   },
   {
    "fieldname": "column_break_elsw",
@@ -129,11 +130,18 @@
    "fieldname": "raw_payload",
    "fieldtype": "Code",
    "label": "Raw Payload"
+  },
+  {
+   "default": "Meta Ads Webhook Config",
+   "fieldname": "config_doctype_name",
+   "fieldtype": "Link",
+   "label": "Config Doctype Name",
+   "options": "DocType"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-31 02:59:57.858479",
+ "modified": "2024-11-12 22:19:24.383719",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Lead Logs",

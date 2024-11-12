@@ -8,18 +8,20 @@ from onelead.utils.meta.manage_ads import fetch_forms_based_on_page
 
 
 class MetaAdsPageConfig(Document):
-	 def after_insert(self):
+	 def before_save(self):
 			# Trigger fetching ad forms after Meta Ads Page Config is created
 			forms = fetch_forms_based_on_page(self.page)
-
+	
+			print(forms)
 			if forms and isinstance(forms, list):
 					# Clear existing entries in form_list if any (optional)
-					self.form_list = []
+					self.forms_list = []
 
 					# Populate form_list child table with fetched form IDs
 					for form in forms:
-							self.append("form_list", {
-									"meta_lead_form": form.get("id"),
+							frappe.msgprint(f"form fetched for list entry.... {form}")
+							self.append("forms_list", {
+									"meta_lead_form": form.get("form_id"),
 									"status": "Not Mapped"
 							})
 					

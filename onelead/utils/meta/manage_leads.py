@@ -16,12 +16,22 @@ def process_logged_lead(doc, method):
           doc.db_set("error_message", f"No configuration found for form_id: {doc.form_id}")
           return
       
+      meta_config = frappe.get_single("Meta Webhook Config")
+      if meta_config.page_flow:
+        if form_config.campaign:
+            doc.db_set("campaign", form_config.campaign)
+        else:
+            ads_doc = frappe.get_doc("Meta Ads", doc.ad_id)
+            form_config.db_set("campaign", ads_doc.campaign)
+            doc.db_set("campaign", ads_doc.campaign)
+
+
       # Use Meta SDK to fetch lead data
-      lead_data = fetch_lead_from_meta(doc.leadgen_id, form_config)
+      lead_data = fetch_lead_from_meta(doc.leadgen_id, meta_config)
 
       if lead_data:
           # Map and create lead Entry
-          lead_doc = create_lead_entry(lead_data, form_config)
+          lead_doc = create_lead_entry(lead_data, form_config, doc)
           doc.db_set("processing_status", "Processed")
           doc.db_set("lead_doc_reference", lead_doc.name)
       else:
@@ -35,11 +45,11 @@ def process_logged_lead(doc, method):
     
 
 
-def fetch_lead_from_meta(leadgen_id, form_config):
+def fetch_lead_from_meta(leadgen_id, meta_config):
     """Fetch lead details from Meta using facebook_business SDK."""
     try:
         # Initialize SDK client with access token and App
-        meta_config = frappe.get_single("Meta Webhook Config")
+        # meta_config = frappe.get_single("Meta Webhook Config")
         app_id = meta_config.app_id
         app_secret = meta_config.get_password("app_secret")
         user_token = meta_config.get_password("user_access_token")
@@ -59,23 +69,43 @@ def fetch_lead_from_meta(leadgen_id, form_config):
         frappe.logger().error(f"Error fetching lead data from Meta for leadgen_id {leadgen_id}: {str(e)}", exc_info=True)
         raise e
     
+def process_default_value(default_value, log_doc, form_doc):
 
-def create_lead_entry(lead_data, form_config):
+    # fetch ads_config doc if default_value is pased as dynamic field value. 
+    ads_config_doc = frappe.get_doc(log_doc.config_doctype_name, log_doc.config_reference)
+
+    # Check if default_value is referencing a field in the config doctype
+    if isinstance(default_value, str) and default_value.startswith("field:"):
+        # Extract the field name after "field:" prefix
+        default_field_name = default_value.split("field:")[1].strip()
+        
+        # Retrieve the field value from ads_config_doc
+        if hasattr(form_doc, default_field_name):
+            field_value = getattr(form_doc, default_field_name)
+            return field_value
+        elif hasattr(ads_config_doc, default_field_name):
+            field_value = getattr(ads_config_doc, default_field_name)
+            return field_value
+        else:
+            frappe.logger().warning(f"Field {default_field_name} not found in {log_doc.config_doctype_name} and Meta Lead Form")
+            return default_value
+
+def create_lead_entry(lead_data, form_doc, log_doc):
     """Create a new Lead record in Frappe based on Meta lead data and form configuration."""
     try:
         field_data = lead_data.get("field_data", [])
         meta_lead_info = {field["name"]: field["values"][0] for field in field_data}
         
-        new_lead = frappe.new_doc(form_config.lead_doctype_reference)
+        new_lead = frappe.new_doc(form_doc.lead_doctype_reference)
 
         # Map the fields according to form configuration
-        for mapping in form_config.mapping:
+        for mapping in form_doc.mapping:
             meta_field = mapping.meta_field
             lead_field = mapping.lead_doctype_field
             default_value = mapping.default_value
                 
             # Use the default value if no data is provided from Meta
-            field_value = meta_lead_info.get(meta_field, default_value)
+            field_value = meta_lead_info.get(meta_field, process_default_value(default_value, log_doc, form_doc))
 
             # If a custom formatting function is specified, apply it
             if mapping.formatting_function:
