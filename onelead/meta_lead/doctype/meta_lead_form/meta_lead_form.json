@@ -15,6 +15,7 @@
   "campaign",
   "ads",
   "page",
+  "created_at",
   "form_assign_section",
   "assignee_doctype",
   "column_break_esiv",
@@ -125,11 +126,17 @@
   {
    "fieldname": "column_break_esiv",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "created_at",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Created At"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-13 02:04:24.849522",
+ "modified": "2024-11-16 01:10:28.753466",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form",

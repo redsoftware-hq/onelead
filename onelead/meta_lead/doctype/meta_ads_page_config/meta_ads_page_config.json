@@ -11,6 +11,7 @@
   "page_access_token",
   "column_break_aqji",
   "status",
+  "updated_at",
   "section_break_cscl",
   "lead_doctype_reference",
   "lead_assign",
@@ -31,7 +32,8 @@
    "in_list_view": 1,
    "label": "Page",
    "options": "Meta Page",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "section_break_tlbp",
@@ -78,6 +80,7 @@
   {
    "fieldname": "page_access_token",
    "fieldtype": "Password",
+   "hidden": 1,
    "label": "Page Access Token",
    "length": 500,
    "read_only": 1
@@ -93,11 +96,19 @@
    "fieldtype": "Table",
    "label": "Forms List",
    "options": "Meta Campaign Form List"
+  },
+  {
+   "description": "This only shows when config was updated via script.",
+   "fieldname": "updated_at",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Updated At",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-13 02:05:34.633718",
+ "modified": "2024-11-15 23:00:30.129705",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ads Page Config",

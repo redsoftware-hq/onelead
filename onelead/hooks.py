@@ -33,6 +33,8 @@ doc_events = {
 # Includes in <head>
 # ------------------
 
+app_include_css = "/assets/onelead/css/meta.css"
+
 # include js, css files in header of desk.html
 # app_include_css = "/assets/onelead/css/onelead.css"
 # app_include_js = "/assets/onelead/js/onelead.js"

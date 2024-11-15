@@ -27,6 +27,25 @@ def is_token_short_lived(doc, user_access_token, app_access_token):
     expires_in_days = (expires_at - datetime.now()).days if expires_at else None
     frappe_formatted_expires_at = expires_at.strftime('%Y-%m-%d %H:%M:%S') if expires_at else "N/A"
 
+    # Check for required permissions
+    required_permissions = [
+        "pages_show_list",
+        "ads_management",
+        "ads_read",
+        "leads_retrieval",
+        "pages_read_engagement",
+        "pages_manage_metadata",
+        "pages_manage_ads",
+    ]
+    granted_permissions = token_data.get("scopes", [])
+    missing_permissions = [perm for perm in required_permissions if perm not in granted_permissions]
+
+    if missing_permissions:
+        frappe.throw(
+            title="Insufficient Permissions",
+            msg=f"The user Access Token is missing the following permissions: {', '.join(missing_permissions)}, please enter correct Token with all the permissions."
+        )
+
     is_short_lived = expires_in_days and expires_in_days < 30
     data = {
         "is_short_lived": is_short_lived,
@@ -72,7 +91,7 @@ def get_long_lived_user_token(doc, user_access_token, app_secret, app_id):
         frappe.log_error(frappe.get_traceback(), "Token Exchange Error")
         frappe.throw(f"Failed to exchange token: {str(e)}")
 
-def install_app_to_page(page_access_token, page_id):
+def install_app_to_page(page_access_token, page_id, app_id):
     # Initialize the API with the user access token
     FacebookAdsApi.init(access_token=page_access_token)
 
@@ -81,6 +100,13 @@ def install_app_to_page(page_access_token, page_id):
     
     # Install the app on the Page with subscribed fields
     try:
+        # Check if the app is already subscribed
+        existing_subscriptions = page.get_subscribed_apps()
+        for app in existing_subscriptions:
+            if app.get("id") == app_id:  # Replace with your app's ID
+                frappe.msgprint(f"App is already installed on page {page_id}.")
+                return
+        
         page.create_subscribed_app(params={"subscribed_fields": ["leadgen"]})
         frappe.msgprint(f"App successfully installed on page {page_id}.")
     except Exception as e:
@@ -149,12 +175,13 @@ def get_adaccounts():
     token_data = is_token_short_lived(meta_config, user_token, app_secret)
     meta_config.user_id = token_data["user_id"]
     if token_data["is_short_lived"]:
+        print('Meta got short lived token, updating...')
         token_data = get_long_lived_user_token(meta_config, user_token, app_secret, app_id)
         user_token = token_data["access_token"]
-    else:
-        meta_config.is_valid = token_data["is_valid"]
-        meta_config.save(ignore_permissions=True)
-
+    meta_config.is_valid = token_data["is_valid"]
+    meta_config.save(ignore_permissions=True)
+    frappe.db.commit()
+    
     FacebookAdsApi.init(app_id, app_secret, user_token)
     
     try:
@@ -233,15 +260,20 @@ def get_adaccounts():
                 # If page_flow is enabled, create/update Meta Ads Page Config and get page access token
                 if page_flow:
                     # Install app on page and get page access token
-                    install_app_to_page(page_access_token, page_id)
-                    
-                    # Create or update Meta Ads Page Config with page_id and page access token
-                    page_config_doc = frappe.get_doc("Meta Ads Page Config", {"page": page_id}) if frappe.db.exists("Meta Ads Page Config", {"page": page_id}) else frappe.new_doc("Meta Ads Page Config")
-                    page_config_doc.update({
-                        "page": page_id,
-                        # "page_access_token": page_token
-                    })
-                    page_config_doc.save(ignore_permissions=True)
+                    install_app_to_page(page_access_token, page_id, app_id)
+                    fetch_form_job_id = f"fetch_forms_{ad_account['account_id']}_{page_id}"
+                    existing_job = get_job(fetch_form_job_id)
+
+                    if existing_job and existing_job.get_status() in ('queued', 'started'):
+                        frappe.logger().info(f"Job with job_id '{fetch_form_job_id}' is already in the queue or running.")
+                    else:
+                        frappe.enqueue(
+                            'onelead.utils.meta.manage_ads.fetch_forms_based_on_page',
+                            page_id=page_id,
+                            job_id=fetch_form_job_id,
+                            enqueue_after_commit=True,
+                            queue='default' # 300 Sec timeout
+                        )
 
             if page_flow:
                 job_id = f"fetch_campaigns_{ad_account['account_id']}"
@@ -371,7 +403,6 @@ def fetch_campaigns(page_id, ad_account_id):
         frappe.throw(f"Failed to fetch campaigns: {str(e)}")
 
 
-
 @frappe.whitelist()
 def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=None):
     # check for user login
@@ -431,6 +462,62 @@ def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=No
         frappe.log_error(frappe.get_traceback(), "Meta API Error")
         frappe.throw(f"Failed to fetch forms: {str(e)}")
 
+def create_meta_ads_page_config_doc(page_id, forms):
+    """
+    Creates or updates a Meta Ads Page Config document with the given page ID 
+    and appends forms to the forms_list child table if provided.
+
+    Args:
+        page_id (str): The ID of the Meta Page.
+        forms (list): List of forms with details to append to the forms_list.
+    """
+    try:
+        # Fetch existing or create a new Meta Ads Page Config document
+        page_config_doc = (frappe.get_doc("Meta Ads Page Config", {"page": page_id}) 
+                           if frappe.db.exists("Meta Ads Page Config", {"page": page_id}) 
+                           else frappe.new_doc("Meta Ads Page Config"))
+
+        # Update the page and timestamp
+        page_config_doc.update({
+            "page": page_id,
+            "updated_at": frappe.utils.now_datetime()
+        })
+
+        # Log the forms for debugging
+        frappe.logger().info(f"Forms received for page {page_id}: {forms}")
+
+        if forms and isinstance(forms, list):
+            # Clear existing entries in forms_list (optional)
+            page_config_doc.set("forms_list", [])
+
+            # Append each form to the forms_list child table
+            for form in forms:
+                form_id = form.get("form_id")
+                status = form.get("status")
+                created_at = form.get("created_at")
+
+                if not form_id or status != "ACTIVE":
+                    continue  # Skip if form_id is missing or form is not active 
+                
+                    # Check if created_at is in the year 2024
+                if created_at:
+                    created_year = datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S").year
+                    if created_year != 2024:
+                        continue  # Skip if the form was not created in 2024
+                
+                print(f"Adding form to list: {form}")
+                page_config_doc.append("forms_list", {
+                    "meta_lead_form": form_id,
+                    "status": "Not Mapped"
+                })
+
+        # Save the document to commit changes
+        page_config_doc.save(ignore_permissions=True)
+        frappe.msgprint(f"Meta Ads Page Config for page {page_id} successfully updated.")
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Error Updating Meta Ads Page Config")
+        frappe.throw(f"Failed to create/update Meta Ads Page Config: {str(e)}")
+
 
 @frappe.whitelist()
 def fetch_forms_based_on_page(page_id):
@@ -439,9 +526,15 @@ def fetch_forms_based_on_page(page_id):
         frappe.throw("You must be logged in to access this function.")
     
     # Retrieve the Meta Page to access the page token
-    page_doc = frappe.get_doc("Meta Page", page_id)
-    page_access_token = page_doc.page_access_token
+    try:
+        page_doc = frappe.get_doc("Meta Page", page_id)
+    except frappe.DoesNotExistError:
+        frappe.throw(f"Meta Page with ID {page_id} does not exist.")
+
+    # Retrieve the decrypted page access token
+    page_access_token = page_doc.get_password("page_access_token")
     
+
     if not page_access_token:
         frappe.throw(f"Page Access Token is not available in Meta Page {page_id}. Ensure the page is properly connected.")
 
@@ -456,7 +549,7 @@ def fetch_forms_based_on_page(page_id):
         form_ids = []
 
         # Fetch the lead generation forms from the current page
-        leadgen_forms = page.get_lead_gen_forms(fields=["id", "name", "status"], params=params)
+        leadgen_forms = page.get_lead_gen_forms(fields=["id", "name", "status", "created_time"], params=params)
 
         # Paginate through lead generation forms
         while True:
@@ -468,6 +561,10 @@ def fetch_forms_based_on_page(page_id):
 
                 # Create or update the form in Meta Lead Form DocType
                 form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form_id}) if frappe.db.exists("Meta Lead Form", {"form_id": form_id}) else frappe.new_doc("Meta Lead Form")
+                created_at = form.get("created_time", None)
+                if created_at:
+                    form_doc.created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S%z").strftime("%Y-%m-%d %H:%M:%S")
+
                 form_doc.update({
                     "form_id": form_id,
                     "form_name": form_name,
@@ -479,7 +576,9 @@ def fetch_forms_based_on_page(page_id):
                 form_doc.save(ignore_permissions=True)
                 form_ids.append({
                     "form_name": form_name,
-                    "form_id": form_id
+                    "status": status,
+                    "form_id": form_id,
+                    "created_at": datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S%z").strftime("%Y-%m-%d %H:%M:%S")
                 })
                 
             # Update total fetched count
@@ -492,6 +591,7 @@ def fetch_forms_based_on_page(page_id):
                 break  # Exit loop if there are no more pages
         
         frappe.db.commit()
+        create_meta_ads_page_config_doc(page_id, form_ids)
         return form_ids
 
     except Exception as e:
@@ -574,13 +674,16 @@ def fetch_form_details(doc, method):
         # Fetch form details using the Facebook API
         lead_form = LeadgenForm(doc.form_id)
         form_data = lead_form.api_get(fields=[
-            'id', 'name', 'status', 'locale', 'questions'
+            'id', 'name', 'status', 'locale', 'questions', 'created_time'
         ])
         
         # Populate form details in the Meta Lead Form document
         doc.form_name = form_data.get("name", "Unknown")
         doc.status = form_data.get("status", "INACTIVE")
         doc.locale = form_data.get("locale", "en_US")
+        created_at = form_data.get("created_time", None)
+        if created_at:
+            doc.created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S%z").strftime("%Y-%m-%d %H:%M:%S")
 
         # Convert existing meta fields in mapping to a set for easy checking
         existing_meta_fields = {entry.meta_field for entry in doc.mapping}

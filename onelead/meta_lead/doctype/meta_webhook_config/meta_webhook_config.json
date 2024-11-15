@@ -11,14 +11,14 @@
   "app_id",
   "app_secret",
   "app_name",
-  "connect_facebook",
   "is_enabled",
   "page_flow",
   "column_break_blmf",
   "user_access_token",
   "user_id",
   "token_expiry",
-  "is_token_valid"
+  "is_token_valid",
+  "connect_facebook"
  ],
  "fields": [
   {
@@ -102,8 +102,13 @@
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
- "links": [],
- "modified": "2024-11-12 00:13:30.123281",
+ "links": [
+  {
+   "link_doctype": "Meta Ads Page Config",
+   "link_fieldname": "page"
+  }
+ ],
+ "modified": "2024-11-16 01:11:29.074410",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Config",
