@@ -16,7 +16,7 @@ frappe.ui.form.on("Meta Ads Page Config", {
 
 	refresh(frm) {
 
-	},
+  },
 });
 
 

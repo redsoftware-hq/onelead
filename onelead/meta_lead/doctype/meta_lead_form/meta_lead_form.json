@@ -22,7 +22,10 @@
   "assign_to",
   "form_mapping_section",
   "lead_doctype_reference",
-  "mapping"
+  "mapping",
+  "section_break_puby",
+  "question_fetched",
+  "force_refresh"
  ],
  "fields": [
   {
@@ -132,11 +135,28 @@
    "fieldtype": "Datetime",
    "in_list_view": 1,
    "label": "Created At"
+  },
+  {
+   "fieldname": "section_break_puby",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "question_fetched",
+   "fieldtype": "Check",
+   "label": "Question Fetched?"
+  },
+  {
+   "default": "0",
+   "description": "Re-fetches form details from Meta if selected.",
+   "fieldname": "force_refresh",
+   "fieldtype": "Check",
+   "label": "Force Refresh?"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-16 01:10:28.753466",
+ "modified": "2024-11-19 21:49:38.500207",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form",
@@ -156,7 +176,7 @@
    "write": 1
   }
  ],
- "search_fields": "form_id, form_name",
+ "search_fields": "form_id, form_name, campaign, ads, page",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

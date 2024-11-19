@@ -8,13 +8,13 @@ def check_jobs_running():
     Returns True if any such job is found; otherwise, returns False.
     """
     job_found = False
-    queued_jobs = get_jobs(site=frappe.local.site, queue="default")
+    queued_jobs = get_jobs(site=frappe.local.site, queue="long")
 
     print(queued_jobs.items())
 
     # Iterate through queued jobs in the "default" queue
     for job in queued_jobs.get(frappe.local.site, []):
-        if "fetch_campaigns" in job or "fetch_forms_based_on_page" in job:
+        if "page_flow_fetch_page_and_campaign" in job:
             # if job_info.get("status") in ["queued", "started"]:
             job_found = True
             break  # Exit loop as soon as we find a matching job

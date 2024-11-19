@@ -10,7 +10,7 @@
   "ads_name",
   "status",
   "campaign",
-  "has_form"
+  "has_lead_form"
  ],
  "fields": [
   {
@@ -39,12 +39,6 @@
    "options": "Meta Campaign"
   },
   {
-   "default": "0",
-   "fieldname": "has_form",
-   "fieldtype": "Check",
-   "label": "Does Creative have a leadgen form?"
-  },
-  {
    "allow_in_quick_entry": 1,
    "fieldname": "ads_id",
    "fieldtype": "Data",
@@ -56,11 +50,17 @@
    "no_copy": 1,
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "has_lead_form",
+   "fieldtype": "Check",
+   "label": "Does Creative have a leadgen form?"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-30 18:31:12.683041",
+ "modified": "2024-11-19 22:52:01.322993",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ads",

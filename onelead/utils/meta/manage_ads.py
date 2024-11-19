@@ -175,7 +175,7 @@ def get_adaccounts():
     token_data = is_token_short_lived(meta_config, user_token, app_secret)
     meta_config.user_id = token_data["user_id"]
     if token_data["is_short_lived"]:
-        print('Meta got short lived token, updating...')
+        frappe.logger().info('Meta got short lived token, updating...')
         token_data = get_long_lived_user_token(meta_config, user_token, app_secret, app_id)
         user_token = token_data["access_token"]
     meta_config.is_valid = token_data["is_valid"]
@@ -243,6 +243,7 @@ def get_adaccounts():
             ad_account_instance = AdAccount(id)
             pages = ad_account_instance.get_promote_pages(fields=['id', 'name', 'access_token'])
 
+            page_ids = [page["id"] for page in pages]
             # Add associated pages to child table in Ad Account Config
             for page in pages:
                 page_id = page["id"]
@@ -261,35 +262,52 @@ def get_adaccounts():
                 if page_flow:
                     # Install app on page and get page access token
                     install_app_to_page(page_access_token, page_id, app_id)
-                    fetch_form_job_id = f"fetch_forms_{ad_account['account_id']}_{page_id}"
-                    existing_job = get_job(fetch_form_job_id)
+                        
+                    # fetch_form_job_id = f"fetch_forms_{ad_account['account_id']}_{page_id}"
+                    # existing_job = get_job(fetch_form_job_id)
 
-                    if existing_job and existing_job.get_status() in ('queued', 'started'):
-                        frappe.logger().info(f"Job with job_id '{fetch_form_job_id}' is already in the queue or running.")
-                    else:
-                        frappe.enqueue(
-                            'onelead.utils.meta.manage_ads.fetch_forms_based_on_page',
-                            page_id=page_id,
-                            job_id=fetch_form_job_id,
-                            enqueue_after_commit=True,
-                            queue='default' # 300 Sec timeout
-                        )
+                    # if existing_job and existing_job.get_status() in ('queued', 'started'):
+                    #     frappe.logger().info(f"Job with job_id '{fetch_form_job_id}' is already in the queue or running.")
+                    # else:
+                    #     frappe.enqueue(
+                    #         'onelead.utils.meta.manage_ads.fetch_forms_based_on_page',
+                    #         page_id=page_id,
+                    #         job_id=fetch_form_job_id,
+                    #         enqueue_after_commit=True,
+                    #         queue='default' # 300 Sec timeout
+                    #     )
 
             if page_flow:
-                job_id = f"fetch_campaigns_{ad_account['account_id']}"
+                # job_id = f"fetch_campaigns_{ad_account['account_id']}"
+                # existing_job = get_job(job_id)
+
+                # if existing_job and existing_job.get_status() in ('queued', 'started'):
+                #     frappe.logger().info(f"Job with job_id '{job_id}' is already in the queue or running.")
+                # else:
+                #     frappe.enqueue(
+                #         'onelead.utils.meta.manage_ads.fetch_campaigns',
+                #         page_id='',
+                #         ad_account_id=ad_account['account_id'],
+                #         job_id=job_id,
+                #         enqueue_after_commit=True,
+                #         queue='default' # 300 Sec timeout
+                #     )
+
+                # page_flow_fetch_page_and_campaign(page_ids=page_ids, ad_account_id=ad_account["account_id"])
+                job_id = f"fetch_data_for_page_flow_{ad_account['account_id']}"
                 existing_job = get_job(job_id)
 
                 if existing_job and existing_job.get_status() in ('queued', 'started'):
                     frappe.logger().info(f"Job with job_id '{job_id}' is already in the queue or running.")
                 else:
                     frappe.enqueue(
-                        'onelead.utils.meta.manage_ads.fetch_campaigns',
-                        page_id='',
+                        'onelead.utils.meta.manage_ads.page_flow_fetch_page_and_campaign',
+                        page_ids=page_ids,
                         ad_account_id=ad_account['account_id'],
                         job_id=job_id,
-                        enqueue_after_commit=True,
-                        queue='default' # 300 Sec timeout
+                        queue='long' # 300 Sec timeout
                     )
+
             # Save the Ad Account
             ad_account_doc.save(ignore_permissions=True)
         
@@ -302,7 +320,7 @@ def get_adaccounts():
 
 
 @frappe.whitelist()
-def fetch_campaigns(page_id, ad_account_id):
+def fetch_campaigns(page_id, ad_account_id, page_flow=False):
     # check for user login
     if not frappe.session.user or frappe.session.user == 'Guest':
       frappe.throw("You must be logged in to access this function.")
@@ -334,6 +352,7 @@ def fetch_campaigns(page_id, ad_account_id):
         ]
         campaigns_cursor = ad_account.get_campaigns(fields=fields, params=params)
 
+        campaign_to_form_dict = {}
         while True:
             # Loop through each campaign and save it in Meta Campaign DocType
             for campaign in campaigns_cursor:
@@ -371,9 +390,18 @@ def fetch_campaigns(page_id, ad_account_id):
                     
                     # Check if the ad has a lead generation form in its creative
                     has_lead_form = False
-                    if ad.get("creative") and ad["creative"].get("object_story_spec") and ad["creative"]["object_story_spec"].get("call_to_action"):
-                        call_to_action = ad["creative"]["object_story_spec"]["call_to_action"]
-                        has_lead_form = "lead_gen_form_id" in call_to_action.get("value", {})
+                    if ad.get("creative") and ad["creative"].get("object_story_spec"):
+                        object_story_spec = ad["creative"].get("object_story_spec")
+                        # print("object_story_spec", object_story_spec)
+                        call_to_actions = find_call_to_action(object_story_spec.export_all_data())
+                        
+                        if len(call_to_actions) > 0:
+                            for call_to_action in call_to_actions:
+                                form_id = call_to_action.get("value", {}).get("lead_gen_form_id")
+                                campaign_to_form_dict[form_id] = campaign_id
+
+                            has_lead_form = True
+                            campaign_doc.set("has_lead_form", has_lead_form)
 
                     # Prepare ad doc dictionary
                     ad_doc_dict = {
@@ -381,14 +409,16 @@ def fetch_campaigns(page_id, ad_account_id):
                         "ads_name": ad_name,
                         "status": ad_status,
                         "campaign": campaign_id,
-                        "has_form": has_lead_form
+                        "has_lead_form": has_lead_form
                     }
 
                     # Upsert Meta Ads document
                     ad_doc = frappe.get_doc("Meta Ads", {"ads_id": ad_id}) if frappe.db.exists("Meta Ads", {"ads_id": ad_id}) else frappe.new_doc("Meta Ads")
                     ad_doc.update(ad_doc_dict)
                     ad_doc.save(ignore_permissions=True)
-            
+                
+                campaign_doc.save(ignore_permissions=True)
+
             # Check for next page
             if campaigns_cursor.load_next_page():
                 campaigns_cursor = campaigns_cursor.next()
@@ -396,6 +426,9 @@ def fetch_campaigns(page_id, ad_account_id):
                 break
         
         frappe.db.commit()
+
+        if page_flow:
+            return campaign_to_form_dict
         return "Success"
 
     except Exception as e:
@@ -488,24 +521,36 @@ def create_meta_ads_page_config_doc(page_id, forms):
 
         if forms and isinstance(forms, list):
             # Clear existing entries in forms_list (optional)
-            page_config_doc.set("forms_list", [])
+            # page_config_doc.set("forms_list", [])
+            existing_form_ids = {entry.meta_lead_form for entry in page_config_doc.forms_list}
 
             # Append each form to the forms_list child table
             for form in forms:
                 form_id = form.get("form_id")
                 status = form.get("status")
-                created_at = form.get("created_at")
+                campaign = form.get("campaign", None)
+                # created_at = form.get("created_at")
 
+                # Skip if form_id is missing or form is not active 
                 if not form_id or status != "ACTIVE":
-                    continue  # Skip if form_id is missing or form is not active 
+                    continue 
                 
-                    # Check if created_at is in the year 2024
-                if created_at:
-                    created_year = datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S").year
-                    if created_year != 2024:
-                        continue  # Skip if the form was not created in 2024
+                # check if the form has campaign then only add to forms_list
+                if not campaign:
+                    continue
+
+
+                # Check if the form_id already exists in forms_list and Skip if already present
+                if form_id in existing_form_ids:
+                    continue  
+
+                # Check if created_at is in the year 2024  (removed not in favor of)
+                # if created_at:
+                #     created_year = datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S").year
+                #     if created_year != 2024:
+                #         continue  # Skip if the form was not created in 2024
                 
-                print(f"Adding form to list: {form}")
+                # print('form........', form)
                 page_config_doc.append("forms_list", {
                     "meta_lead_form": form_id,
                     "status": "Not Mapped"
@@ -520,7 +565,7 @@ def create_meta_ads_page_config_doc(page_id, forms):
 
 
 @frappe.whitelist()
-def fetch_forms_based_on_page(page_id):
+def fetch_forms_based_on_page(page_id, campaign_to_form_dict=None):
     # Check for user session
     if not frappe.session.user or frappe.session.user == 'Guest':
         frappe.throw("You must be logged in to access this function.")
@@ -565,21 +610,19 @@ def fetch_forms_based_on_page(page_id):
                 if created_at:
                     form_doc.created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S%z").strftime("%Y-%m-%d %H:%M:%S")
 
-                form_doc.update({
+                form_doc_payload = {
                     "form_id": form_id,
                     "form_name": form_name,
                     "status": status,
                     "page": page_id,
-                    "assignee_doctype": "User",
-                    "assign_to": "Administrator"
-                })
+                }
+
+                if campaign_to_form_dict and campaign_to_form_dict.get(form_id, None):
+                    form_doc_payload["campaign"] = campaign_to_form_dict.get(form_id)
+                
+                form_doc.update(form_doc_payload)
                 form_doc.save(ignore_permissions=True)
-                form_ids.append({
-                    "form_name": form_name,
-                    "status": status,
-                    "form_id": form_id,
-                    "created_at": datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S%z").strftime("%Y-%m-%d %H:%M:%S")
-                })
+                form_ids.append(form_doc_payload)
                 
             # Update total fetched count
             total_fetched += len(leadgen_forms)
@@ -591,14 +634,30 @@ def fetch_forms_based_on_page(page_id):
                 break  # Exit loop if there are no more pages
         
         frappe.db.commit()
-        create_meta_ads_page_config_doc(page_id, form_ids)
         return form_ids
 
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Meta API Error")
         frappe.throw(f"Failed to fetch forms: {str(e)}")
 
-def find_call_to_action(data, depth=0, max_depth=5):
+@frappe.whitelist()
+def page_flow_fetch_page_and_campaign(page_ids, ad_account_id):
+    try:
+        campaign_to_form_dict = fetch_campaigns(page_id="", ad_account_id=ad_account_id, page_flow=True)
+
+        frappe.logger().info(f"campaign forms list {campaign_to_form_dict}")
+
+        for page_id in page_ids:
+            form_ids = fetch_forms_based_on_page(page_id=page_id, campaign_to_form_dict=campaign_to_form_dict)
+            create_meta_ads_page_config_doc(page_id, form_ids)
+            
+        # fetch_forms_based_on_selection()
+
+    except Exception as e:
+        print(e)
+        frappe.log_error("page_flow_fetch_page_and_campaign", str(e))
+
+def find_call_to_action(data, depth=0, max_depth=6):
     """Recursively find all call_to_action objects in a nested structure.
         call_to_action can be in different ad object link_data, video_data,
         and these objects may have child_attachments which would have same
@@ -606,7 +665,7 @@ def find_call_to_action(data, depth=0, max_depth=5):
         recursively.
         give max_depth of 5 to prevent any misuse.
     """
-    if depth > max_depth:
+    if depth > max_depth or not data:
         return []
     
     call_to_actions = []
@@ -657,6 +716,9 @@ def fetch_form_details(doc, method):
     if not doc.form_id:
         frappe.throw("Form ID is required to fetch form details, with fetch_form_dtails")
     
+    if doc.question_fetched and not doc.force_refresh:
+        return
+    
     # Get Meta Webhook Config settings for credentials
     meta_config = frappe.get_single("Meta Webhook Config")
     app_id = meta_config.app_id
@@ -706,6 +768,8 @@ def fetch_form_details(doc, method):
         #         "default_value": "",      
         #         "formatting_function": ""
         #     })
+        doc.force_refresh = 0
+        doc.question_fetched = 1
         return
 
     except Exception as e:
