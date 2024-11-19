@@ -15,7 +15,6 @@ frappe.ui.form.on("Meta Ads Page Config", {
   },
 
 	refresh(frm) {
-
   },
 });
 
@@ -80,13 +79,13 @@ frappe.ui.form.on("Meta Campaign Form List", {
                         if (r.message) {
                           // Filter fields based on mappable field types (Data, Link, etc.)
                           let mappable_fields = r.message.fields
-                            .filter(field => ['Data', 'Phone', 'Link', 'Select', 'Int', 'Float', 'Date'].includes(field.fieldtype))
+                            .filter(field => ['Data', 'Phone', 'Link', 'Select', 'Int', 'Date'].includes(field.fieldtype))
                             .map(field => field.fieldname);
 
                           // Get mandatory fields
-                          mandatory_fields = r.message.fields
-                            .filter(field => field.reqd)
-                            .map(field => field.fieldname);
+                          // mandatory_fields = r.message.fields
+                          //   .filter(field => field.reqd)
+                          //   .map(field => field.fieldname);
 
                           // Update lead_doctype_field options in the mapping table
                           d.fields_dict.mapping.grid.update_docfield_property(
