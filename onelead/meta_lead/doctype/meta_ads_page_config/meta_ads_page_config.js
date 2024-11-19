@@ -64,7 +64,7 @@ frappe.ui.form.on("Meta Campaign Form List", {
                 options: 'DocType',
                 // Try to take form lead doc ref first, if not found then from parent lead doc ref. 
                 default: metaLeadForm.lead_doctype_reference || frm.doc.lead_doctype_reference,
-                reqd: 1,
+                // reqd: 1,
                 change: function () {
                   let lead_doctype = d.get_value('lead_doctype');
                   if (lead_doctype) {
