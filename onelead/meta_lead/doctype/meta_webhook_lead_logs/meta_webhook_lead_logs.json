@@ -61,7 +61,7 @@
   },
   {
    "fieldname": "received_time",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "label": "Received Time"
   },
   {
@@ -141,7 +141,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-12 22:19:24.383719",
+ "modified": "2024-12-01 21:15:01.806902",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Lead Logs",

@@ -14,7 +14,11 @@
   "status",
   "start_time",
   "stop_time",
-  "has_lead_form"
+  "has_lead_form",
+  "section_break_yzhm",
+  "assignee_doctype",
+  "column_break_lehj",
+  "assign_to"
  ],
  "fields": [
   {
@@ -78,6 +82,26 @@
    "fieldname": "has_lead_form",
    "fieldtype": "Check",
    "label": "has lead forms?"
+  },
+  {
+   "fieldname": "section_break_yzhm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "assignee_doctype",
+   "fieldtype": "Link",
+   "label": "Assignee Doctype",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "column_break_lehj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assign_to",
+   "fieldtype": "Dynamic Link",
+   "label": "Assign To",
+   "options": "assignee_doctype"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -87,7 +111,7 @@
    "link_fieldname": "campaign"
   }
  ],
- "modified": "2024-11-19 22:42:06.325512",
+ "modified": "2024-12-06 20:18:10.056831",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Campaign",
