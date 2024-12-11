@@ -243,9 +243,11 @@ def get_adaccounts():
             ad_account_instance = AdAccount(id)
             pages = ad_account_instance.get_promote_pages(fields=['id', 'name', 'access_token'])
 
-            page_ids = [page["id"] for page in pages]
+            page_obj = [{"id": page["id"], "name": page["name"], "access_token": page["access_token"]} for page in pages]
+            page_ids = [page["id"] for page in page_obj]  # Access as object attribute
+
             # Add associated pages to child table in Ad Account Config
-            for page in pages:
+            for page in page_obj:
                 page_id = page["id"]
                 page_access_token = page.get("access_token")
 
@@ -253,7 +255,6 @@ def get_adaccounts():
                 page_doc = frappe.get_doc("Meta Page", {"page_id": page_id}) if frappe.db.exists("Meta Page", {"page_id": page_id}) else frappe.new_doc("Meta Page")
                 page_doc.update({
                     "page_name": page.get("name", "No Name Found"),
-                    "page_id": page_id,
                     "page_access_token": page_access_token
                 })
                 page_doc.save(ignore_permissions=True)
