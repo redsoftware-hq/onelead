@@ -117,6 +117,8 @@ def create_lead_log(data, lead_data, global_conf):
 
     if config:
         lead_log.config_reference = config.name
+        if not config.get('enable'):
+            lead_log.config_not_enabled = True
         if config.get('campaign', None):
             lead_log.campaign = config.campaign
     else:

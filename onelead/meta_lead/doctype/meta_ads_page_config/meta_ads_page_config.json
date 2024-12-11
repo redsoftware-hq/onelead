@@ -9,6 +9,7 @@
   "section_break_dkvj",
   "page",
   "page_access_token",
+  "enable",
   "column_break_aqji",
   "status",
   "updated_at",
@@ -103,11 +104,17 @@
    "in_list_view": 1,
    "label": "Updated At",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "enable",
+   "fieldtype": "Check",
+   "label": "Enable"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-19 23:58:12.081598",
+ "modified": "2024-12-11 18:34:06.320147",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ads Page Config",

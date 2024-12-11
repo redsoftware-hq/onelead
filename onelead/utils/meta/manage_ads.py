@@ -398,7 +398,10 @@ def fetch_campaigns(page_id, ad_account_id, page_flow=False):
                         if len(call_to_actions) > 0:
                             for call_to_action in call_to_actions:
                                 form_id = call_to_action.get("value", {}).get("lead_gen_form_id")
-                                campaign_to_form_dict[form_id] = campaign_id
+                                campaign_to_form_dict[form_id] = {
+                                    "id": campaign_id,
+                                    "status": campaign_status
+                                    }
 
                             has_lead_form = True
                             campaign_doc.set("has_lead_form", has_lead_form)
@@ -536,7 +539,7 @@ def create_meta_ads_page_config_doc(page_id, forms):
                     continue 
                 
                 # check if the form has campaign then only add to forms_list
-                if not campaign:
+                if not campaign or campaign.get("status") != "ACTIVE":
                     continue
 
 
@@ -618,7 +621,7 @@ def fetch_forms_based_on_page(page_id, campaign_to_form_dict=None):
                 }
 
                 if campaign_to_form_dict and campaign_to_form_dict.get(form_id, None):
-                    form_doc_payload["campaign"] = campaign_to_form_dict.get(form_id)
+                    form_doc_payload["campaign"] = campaign_to_form_dict.get(form_id).get('id')
                 
                 form_doc.update(form_doc_payload)
                 form_doc.save(ignore_permissions=True)

@@ -15,6 +15,7 @@
   "column_break_ufar",
   "processing_status",
   "error_message",
+  "config_not_enabled",
   "reference_section",
   "campaign",
   "config_reference",
@@ -77,7 +78,7 @@
    "in_preview": 1,
    "in_standard_filter": 1,
    "label": "Processing Status",
-   "options": "Pending\nUnconfigured\nProcessed\nError"
+   "options": "Pending\nUnconfigured\nDisabled\nProcessed\nError"
   },
   {
    "fieldname": "error_message",
@@ -137,11 +138,17 @@
    "fieldtype": "Link",
    "label": "Config Doctype Name",
    "options": "DocType"
+  },
+  {
+   "default": "0",
+   "fieldname": "config_not_enabled",
+   "fieldtype": "Check",
+   "label": "Config Not Enabled"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-01 21:15:01.806902",
+ "modified": "2024-12-11 18:38:44.302668",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Lead Logs",
