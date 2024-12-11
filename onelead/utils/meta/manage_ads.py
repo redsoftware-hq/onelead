@@ -541,7 +541,7 @@ def create_meta_ads_page_config_doc(page_id, forms):
                     continue 
                 
                 # check if the form has campaign then only add to forms_list
-                if not campaign or campaign.get("status") != "ACTIVE":
+                if not campaign:
                     continue
 
 
