@@ -255,6 +255,7 @@ def get_adaccounts():
                 page_doc = frappe.get_doc("Meta Page", {"page_id": page_id}) if frappe.db.exists("Meta Page", {"page_id": page_id}) else frappe.new_doc("Meta Page")
                 page_doc.update({
                     "page_name": page.get("name", "No Name Found"),
+                    "page_id": page.get("id"),
                     "page_access_token": page_access_token
                 })
                 page_doc.save(ignore_permissions=True)
