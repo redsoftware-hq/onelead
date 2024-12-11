@@ -19,7 +19,7 @@ def process_logged_lead(doc, method):
       meta_config = frappe.get_single("Meta Webhook Config")
       if meta_config.page_flow:
         if doc.config_not_enabled:
-          doc.db_set("Disabled", "Disabled")
+          doc.db_set("processing_status", "Disabled")
           doc.db_set("error_message", "Configuration {doc.config_reference} is not Enabled")
           return
         if form_config.campaign:
