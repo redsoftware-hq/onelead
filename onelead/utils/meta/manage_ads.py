@@ -72,9 +72,18 @@ def get_long_lived_user_token(doc, user_access_token, app_secret, app_id):
         if "access_token" in long_token_data:
             # Update the token and new expiration
             long_lived_token = long_token_data["access_token"]
-            expires_in_days = long_token_data.get("expires_in") / (60 * 60 * 24)  # Convert seconds to days
-            new_expiration_date = datetime.now() + timedelta(days=expires_in_days)
-            frappe_formatted_expires_at = new_expiration_date.strftime('%Y-%m-%d %H:%M:%S')
+
+            expires_at_timestamp = long_token_data.get("expires_at")
+            if not expires_at_timestamp:
+                expires_at_timestamp = long_token_data.get("data_access_expires_at")
+
+            expires_at = datetime.fromtimestamp(expires_at_timestamp) if expires_at_timestamp else None
+            expires_in_days = (expires_at - datetime.now()).days if expires_at else None
+            # expires_in_days = long_token_data.get("expires_in") / (60 * 60 * 24)  # Convert seconds to days
+            frappe_formatted_expires_at = expires_at.strftime('%Y-%m-%d %H:%M:%S') if expires_at else "N/A"
+
+            # new_expiration_date = datetime.now() + timedelta(days=expires_in_days)
+            # frappe_formatted_expires_at = new_expiration_date.strftime('%Y-%m-%d %H:%M:%S')
 
             doc.user_access_token = long_lived_token
             doc.token_expiry = frappe_formatted_expires_at
