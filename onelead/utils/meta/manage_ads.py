@@ -72,7 +72,7 @@ def get_long_lived_user_token(doc, user_access_token, app_secret, app_id):
         if "access_token" in long_token_data:
             # Update the token and new expiration
             long_lived_token = long_token_data["access_token"]
-            expires_in_days = long_token_data.get("expires_in") // (60 * 60 * 24)  # Convert seconds to days
+            expires_in_days = long_token_data.get("expires_in") / (60 * 60 * 24)  # Convert seconds to days
             new_expiration_date = datetime.now() + timedelta(days=expires_in_days)
             frappe_formatted_expires_at = new_expiration_date.strftime('%Y-%m-%d %H:%M:%S')
 
