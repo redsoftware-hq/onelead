@@ -15,6 +15,7 @@
   "start_time",
   "stop_time",
   "has_lead_form",
+  "self_created",
   "section_break_yzhm",
   "assignee_doctype",
   "column_break_lehj",
@@ -102,6 +103,12 @@
    "fieldtype": "Dynamic Link",
    "label": "Assign To",
    "options": "assignee_doctype"
+  },
+  {
+   "default": "0",
+   "fieldname": "self_created",
+   "fieldtype": "Check",
+   "label": "Self Created?"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -111,7 +118,7 @@
    "link_fieldname": "campaign"
   }
  ],
- "modified": "2024-12-06 20:18:10.056831",
+ "modified": "2024-12-22 23:33:24.389124",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Campaign",

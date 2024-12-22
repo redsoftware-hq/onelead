@@ -14,8 +14,71 @@ frappe.ui.form.on("Meta Ads Page Config", {
     frm.toggle_display('assign_to', frm.doc.lead_assign);
   },
 
-	refresh(frm) {
-  },
+  refresh(frm) {
+    // Add a custom button for Populate Forms
+    frm.add_custom_button(__('Populate Forms'), function () {
+      if (!frm.doc.page) {
+        frappe.msgprint(__('Please select a Page before populating forms.'));
+        return;
+      }
+
+      // Fetch forms linked to the selected page
+      frappe.call({
+        method: "frappe.client.get_list",
+        args: {
+          doctype: "Meta Lead Form",
+          filters: {
+            page: frm.doc.page, // Match the Page ID
+            status: "ACTIVE", // Form should be active
+            campaign: ["is", "set"] // Ensure a campaign is assigned
+          },
+          fields: ["name", "form_name", "campaign"]
+        },
+        callback: function (response) {
+          if (response.message.length > 0) {
+            const activeForms = response.message;
+            let upsertedForms = 0;
+
+            // Loop through the retrieved forms
+            activeForms.forEach(form => {
+              // Check if the campaign is active
+              frappe.call({
+                method: "frappe.client.get",
+                args: {
+                  doctype: "Meta Campaign",
+                  name: form.campaign
+                },
+                callback: function (campaignResponse) {
+                  const campaign = campaignResponse.message;
+                  if (campaign && campaign.status === "ACTIVE") {
+                    // Add or update the form in the mapping table
+                    const existingForm = frm.doc.forms_list.find(row => row.meta_lead_form === form.name);
+                    if (!existingForm) {
+                      // Add new row
+                      const newRow = frm.add_child("forms_list");
+                      newRow.meta_lead_form = form.name;
+                      newRow.campaign = form.campaign;
+                      upsertedForms++;
+                    } else {
+                      // Update existing row if necessary
+                      existingForm.campaign = form.campaign;
+                    }
+
+                    // Refresh the child table field
+                    frm.refresh_field("forms_list");
+                  }
+                }
+              });
+            });
+
+            frappe.msgprint(__(`${upsertedForms} forms have been populated and updated successfully.`));
+          } else {
+            frappe.msgprint(__('No forms found matching the criteria.'));
+          }
+        }
+      });
+    });
+  }
 });
 
 
@@ -133,7 +196,30 @@ frappe.ui.form.on("Meta Campaign Form List", {
                     in_list_view: 1
                   }
                 ]
+              },
+              {
+                fieldtype: 'Section Break',
+                label: 'Lead Assign'
+              },
+              {
+                default: metaLeadForm.assignee_doctype || frm.doc.assignee_doctype || "User",
+                fieldname: "assignee_doctype",
+                fieldtype: "Link",
+                label: "Assignee Doctype",
+                options: "DocType"
+              },
+              {
+                fieldname: "column_break_1",
+                fieldtype: "Column Break"
+              },
+              {
+                default: metaLeadForm.assign_to || frm.doc.assign_to,
+                fieldname: "assign_to",
+                fieldtype: "Dynamic Link",
+                label: "Assign To",
+                options: "assignee_doctype"
               }
+
             ],
             primary_action_label: 'Save Mappings',
             primary_action: function (data) {
@@ -166,12 +252,20 @@ frappe.ui.form.on("Meta Campaign Form List", {
                 }
               });
 
+              if (!data.assign_to) {
+                validation_failed = true;
+                frappe.msgprint(__('Please complete Lead Assign section'))
+              }
+
               if (validation_failed) {
                 return;  // Stop the save action if validation fails
               }
 
               console.log("Mapped data before update:", data.mapping);
-
+              
+              metaLeadForm.assignee_doctype = data.assignee_doctype;
+              metaLeadForm.assign_to = data.assign_to;
+              
               // metaLeadForm.mapping = data.mapping;
               metaLeadForm.mapping = []
 

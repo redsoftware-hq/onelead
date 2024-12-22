@@ -22,6 +22,8 @@ def is_token_short_lived(doc, user_access_token, app_access_token):
     
     token_data = data['data']
     expires_at_timestamp = token_data.get("expires_at")
+    if not expires_at_timestamp:
+        expires_at_timestamp = token_data.get("data_access_expires_at")
 
     expires_at = datetime.fromtimestamp(expires_at_timestamp) if expires_at_timestamp else None
     expires_in_days = (expires_at - datetime.now()).days if expires_at else None
@@ -46,14 +48,14 @@ def is_token_short_lived(doc, user_access_token, app_access_token):
             msg=f"The user Access Token is missing the following permissions: {', '.join(missing_permissions)}, please enter correct Token with all the permissions."
         )
 
-    is_short_lived = expires_in_days and expires_in_days < 30
-    data = {
+    is_short_lived = True if expires_in_days < 30 else False
+    res = {
         "is_short_lived": is_short_lived,
         "is_valid": token_data["is_valid"],
-        "user_id": data.get("user_id"),
+        "user_id": token_data.get("user_id"),
     }
 
-    return data
+    return res
 
 def get_long_lived_user_token(doc, user_access_token, app_secret, app_id):
     """Function to exchange a short-lived user token for a long-lived token."""
@@ -76,9 +78,10 @@ def get_long_lived_user_token(doc, user_access_token, app_secret, app_id):
 
             doc.user_access_token = long_lived_token
             doc.token_expiry = frappe_formatted_expires_at
-            doc.is_valid = 1
+            doc.is_token_valid = True
             doc.save(ignore_permissions=True)
-
+            
+            frappe.logger().info(f"Token exchanged successfully. Expires in {expires_in_days} days.")
             return {
                 "access_token": long_lived_token,
                 "expires_at": frappe_formatted_expires_at,
@@ -176,10 +179,11 @@ def get_adaccounts():
     meta_config.user_id = token_data["user_id"]
     if token_data["is_short_lived"]:
         frappe.logger().info('Meta got short lived token, updating...')
-        token_data = get_long_lived_user_token(meta_config, user_token, app_secret, app_id)
-        user_token = token_data["access_token"]
-    meta_config.is_valid = token_data["is_valid"]
-    meta_config.save(ignore_permissions=True)
+        long_token_data = get_long_lived_user_token(meta_config, user_token, app_secret, app_id)
+        user_token = long_token_data["access_token"]
+    else:
+        meta_config.is_token_valid = token_data["is_valid"]
+        meta_config.save(ignore_permissions=True)
     frappe.db.commit()
     
     FacebookAdsApi.init(app_id, app_secret, user_token)
@@ -196,7 +200,7 @@ def get_adaccounts():
             'business_name', 
             'account_status', 
             'currency', 
-            'promote_pages{id,name}', 
+            'promote_pages', 
             'business_country_code', 
             'business_city', 
             'business_state', 
@@ -206,11 +210,11 @@ def get_adaccounts():
         for ad_account in ad_accounts:
             # Check if the account has associated pages
 
-            pages = ad_account.get('promote_pages', {}).get("data", [])
+            # pages = ad_account.get('promote_pages', {}).get("data", [])
 
-            if len(pages) == 0:
-                # Skip this ad account if there are no pages
-                continue
+            # if len(pages) == 0:
+            #     # Skip this ad account if there are no pages
+            #     continue
             
             # Extract details from the ad account
             account_id = ad_account['account_id']
@@ -348,7 +352,7 @@ def fetch_campaigns(page_id, ad_account_id, page_flow=False):
         ad_account = AdAccount(f'act_{ad_account_id}')
         
         # Start fetching campaigns
-        params = {'limit': 100, 'status': ['ACTIVE']}
+        params = {'limit': 100 }
         fields = [
             'id', 'name', 'objective', 'status', 'start_time', 'stop_time', 'created_time', 'ads.limit(100){id,name,status,creative{object_story_spec}}'
         ]
@@ -423,6 +427,7 @@ def fetch_campaigns(page_id, ad_account_id, page_flow=False):
                     ad_doc.save(ignore_permissions=True)
                 
                 campaign_doc.save(ignore_permissions=True)
+                # fetch_forms_based_on_selection(campaign_id, '', page_id=page_id)
 
             # Check for next page
             if campaigns_cursor.load_next_page():
@@ -444,12 +449,12 @@ def fetch_campaigns(page_id, ad_account_id, page_flow=False):
 @frappe.whitelist()
 def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=None):
     # check for user login
-    if not frappe.session.user or frappe.session.user == 'Guest':
-      frappe.throw("You must be logged in to access this function.")
+    # if not frappe.session.user or frappe.session.user == 'Guest':
+    #   frappe.throw("You must be logged in to access this function.")
     
     # check for user access
-    if not frappe.has_permission(doctype="Meta Webhook Config", ptype="read"):
-        frappe.throw("You do not have permission to access Meta Webhook Config.")
+    # if not frappe.has_permission(doctype="Meta Webhook Config", ptype="read"):
+    #     frappe.throw("You do not have permission to access Meta Webhook Config.")
     
     # Get credentials from Meta Webhook Config
     meta_config = frappe.get_single("Meta Webhook Config")
@@ -476,9 +481,12 @@ def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=No
             forms = []
             for ad_data in ads_data:
                 forms.extend(extract_forms_from_ad(ad_data))
+                # print('forms gotten by extracting based on lead_gen_form_id', forms)
 
         # Store forms in Meta Lead Form and Form List table
         for form in forms:
+            # if frappe.db.exists("Meta Lead Form", {"form_id": form["id"]}):
+                # print("Form already exists in Meta Lead Form: Form ID, ", form["id"])
             # Create or update Meta Lead Form DocType
             form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form["id"]}) if frappe.db.exists("Meta Lead Form", {"form_id": form["id"]}) else frappe.new_doc("Meta Lead Form")
 
@@ -540,6 +548,7 @@ def create_meta_ads_page_config_doc(page_id, forms):
                 if not form_id or status != "ACTIVE":
                     continue 
                 
+                # print("check if it's value present::: ", form)
                 # check if the form has campaign then only add to forms_list
                 if not campaign:
                     continue
@@ -623,8 +632,10 @@ def fetch_forms_based_on_page(page_id, campaign_to_form_dict=None):
                 }
 
                 if campaign_to_form_dict and campaign_to_form_dict.get(form_id, None):
+                    # print("ADD Campaign:::, ", campaign_to_form_dict.get(form_id).get('id'))
                     form_doc_payload["campaign"] = campaign_to_form_dict.get(form_id).get('id')
-                
+                # print('added to form_ids', form_doc_payload)
+
                 form_doc.update(form_doc_payload)
                 form_doc.save(ignore_permissions=True)
                 form_ids.append(form_doc_payload)
@@ -650,12 +661,13 @@ def page_flow_fetch_page_and_campaign(page_ids, ad_account_id):
     try:
         campaign_to_form_dict = fetch_campaigns(page_id="", ad_account_id=ad_account_id, page_flow=True)
 
+        # print('Campaign form list', campaign_to_form_dict)
         frappe.logger().info(f"campaign forms list {campaign_to_form_dict}")
 
         for page_id in page_ids:
             form_ids = fetch_forms_based_on_page(page_id=page_id, campaign_to_form_dict=campaign_to_form_dict)
             create_meta_ads_page_config_doc(page_id, form_ids)
-            
+
         # fetch_forms_based_on_selection()
 
     except Exception as e:
