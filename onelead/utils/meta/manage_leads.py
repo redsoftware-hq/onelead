@@ -31,7 +31,7 @@ def process_logged_lead(doc, method):
                 doc.db_set("campaign", ads_doc.campaign)
             except Exception as e:
                 frappe.logger().error(f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
-                frappe.db_set("error_message", f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
+                doc.db_set("error_message", f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
 
 
       # Use Meta SDK to fetch lead data
