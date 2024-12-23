@@ -103,7 +103,7 @@ def create_lead_entry(lead_data, form_doc, log_doc):
     try:
         field_data = lead_data.get("field_data", [])
         print(field_data)
-        frappe.logger().info(f"Lead data received from Meta: {field_data}")
+        frappe.logger().error(f"Lead data received from Meta: {field_data}")
         meta_lead_info = {field["name"]: field["values"][0] for field in field_data}
         
         new_lead = frappe.new_doc(form_doc.lead_doctype_reference)
@@ -133,7 +133,7 @@ def create_lead_entry(lead_data, form_doc, log_doc):
 
             new_lead.set(lead_field, field_value)
 
-        frappe.logger().info(f"Lead data mapped successfully: {new_lead.as_dict()}")
+        frappe.logger().error(f"Lead data mapped successfully: {new_lead.as_dict()}")
         print(new_lead.as_dict())
         # Insert the new lead and commit to database
         new_lead.insert(ignore_permissions=True)
