@@ -32,6 +32,14 @@ def process_logged_lead(doc, method):
           doc.db_set("processing_status", "Disabled")
           doc.db_set("error_message", "Configuration {doc.config_reference} is not Enabled")
           return
+        if not doc.config_reference:
+            doc.db_set("processing_status", "Disabled")
+            doc.db_set("error_message", "Configuration Reference is not set")
+            return
+        if not doc.lead_doc_reference:
+            doc.db_set("processing_status", "Disabled")
+            doc.db_set("error_message", "Lead Doc Reference is not set")
+            return
         if form_config.campaign:
             doc.db_set("campaign", form_config.campaign)
         else:
@@ -41,8 +49,9 @@ def process_logged_lead(doc, method):
                 doc.db_set("campaign", ads_doc.campaign)
             except Exception as e:
                 frappe.logger().error(f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
+                doc.db_set("processing_status", "Disabled")
                 doc.db_set("error_message", f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
-
+                return
 
       # Use Meta SDK to fetch lead data
       lead_data = fetch_lead_from_meta(doc.leadgen_id, meta_config)
@@ -118,8 +127,6 @@ def create_lead_entry(lead_data, form_doc, log_doc):
     """Create a new Lead record in Frappe based on Meta lead data and form configuration."""
     try:
         field_data = lead_data.get("field_data", [])
-        print(field_data)
-        frappe.logger().error(f"Lead data received from Meta: {field_data}")
         meta_lead_info = {field["name"]: field["values"][0] for field in field_data if "values" in field}
         
         new_lead = frappe.new_doc(form_doc.lead_doctype_reference)
@@ -133,9 +140,7 @@ def create_lead_entry(lead_data, form_doc, log_doc):
             # Use the default value if no data is provided from Meta
             field_value = meta_lead_info.get(meta_field, None)
             if not field_value:
-                print("DEFAULT VALUE", default_value)
                 field_value = process_default_value(default_value, log_doc, form_doc)
-            print("FIELD VALUE", field_value)
 
             # If a custom formatting function is specified, apply it
             if mapping.formatting_function:
@@ -153,11 +158,11 @@ def create_lead_entry(lead_data, form_doc, log_doc):
 
             new_lead.set(lead_field, field_value)
 
-        frappe.logger().error(f"Lead data mapped successfully: {new_lead.as_dict()}")
-        print(new_lead.as_dict())
         # Insert the new lead and commit to database
         frappe.set_user("info@hairfreehairgrow.com")
-        new_lead.insert(ignore_permissions=True)
+        frappe.logger().error(f"Creating lead document with data: {new_lead.as_dict()}")
+        res = new_lead.insert(ignore_permissions=True)
+        frappe.logger().error(f"Creating lead document with data: {res}")
         frappe.db.commit()
         
         frappe.logger().info(f"Lead created successfully with name: {new_lead.name}")
