@@ -4,6 +4,16 @@ from facebook_business.adobjects.lead import Lead
 from . import formatting_functions
 # from your_meta_sdk_module import MetaAdsAPI 
 
+@frappe.whitelist()
+def manual_retry_lead_processing(docname):
+    """Manually retry processing a lead log entry."""
+    try:
+        doc = frappe.get_doc("Meta Webhook Lead Logs", docname)
+        return process_logged_lead(doc, "manual")
+    except Exception as e:
+        frappe.logger().error(f"Error in manual retry for lead log {docname}: {str(e)}", exc_info=True)
+        return {"status": "error", "message": str(e)}
+
 def process_logged_lead(doc, method):
   """Process a lead after it's logged in Meta Webhook Lead Logs."""
   try:
@@ -46,10 +56,15 @@ def process_logged_lead(doc, method):
           doc.db_set("processing_status", "Error")
           doc.db_set("error_message", "Failed to retrieve lead details from Meta API")
 
+      if method == "manual":
+          return {"status": "success", "message": "Lead processed successfully"}
+
   except Exception as e:
       doc.db_set("processing_status", "Error")
       doc.db_set("error_message", str(e))
       frappe.logger().error(f"Error in processing lead for leadgen_id {doc.leadgen_id}: {str(e)}", exc_info=True)
+      if method == "manual":
+          return {"status": "error", "message": str(e)}
     
 
 
