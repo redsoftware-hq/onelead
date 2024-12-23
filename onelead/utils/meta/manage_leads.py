@@ -131,6 +131,8 @@ def create_lead_entry(lead_data, form_doc, log_doc):
 
             new_lead.set(lead_field, field_value)
 
+        frappe.logger().info(f"Lead data mapped successfully: {new_lead.as_dict()}")
+        print(new_lead.as_dict())
         # Insert the new lead and commit to database
         new_lead.insert(ignore_permissions=True)
         frappe.db.commit()
