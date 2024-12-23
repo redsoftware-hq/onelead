@@ -141,6 +141,7 @@ def create_lead_entry(lead_data, form_doc, log_doc):
         frappe.logger().error(f"Lead data mapped successfully: {new_lead.as_dict()}")
         print(new_lead.as_dict())
         # Insert the new lead and commit to database
+        frappe.set_user("info@hairfreehairgrow.com")
         new_lead.insert(ignore_permissions=True)
         frappe.db.commit()
         
