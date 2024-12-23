@@ -37,7 +37,7 @@ def process_logged_lead(doc, method):
             doc.db_set("error_message", "Configuration Reference is not set")
             return
         
-        if not form_config.lead_doc_reference:
+        if not form_config.lead_doctype_reference:
             doc.db_set("processing_status", "Disabled")
             doc.db_set("error_message", "Lead Doc is not set in form doc/Configuration")
             return
