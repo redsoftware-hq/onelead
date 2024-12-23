@@ -97,6 +97,7 @@ def process_default_value(default_value, log_doc, form_doc):
         else:
             frappe.logger().warning(f"Field {default_field_name} not found in {log_doc.config_doctype_name} and Meta Lead Form")
             return default_value
+    return default_value
 
 def create_lead_entry(lead_data, form_doc, log_doc):
     """Create a new Lead record in Frappe based on Meta lead data and form configuration."""
@@ -115,7 +116,11 @@ def create_lead_entry(lead_data, form_doc, log_doc):
             default_value = mapping.default_value
                 
             # Use the default value if no data is provided from Meta
-            field_value = meta_lead_info.get(meta_field, process_default_value(default_value, log_doc, form_doc))
+            field_value = meta_lead_info.get(meta_field, None)
+            if not field_value:
+                print("DEFAULT VALUE", default_value)
+                field_value = process_default_value(default_value, log_doc, form_doc)
+            print("FIELD VALUE", field_value)
 
             # If a custom formatting function is specified, apply it
             if mapping.formatting_function:
