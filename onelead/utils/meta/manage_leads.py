@@ -105,7 +105,7 @@ def create_lead_entry(lead_data, form_doc, log_doc):
         field_data = lead_data.get("field_data", [])
         print(field_data)
         frappe.logger().error(f"Lead data received from Meta: {field_data}")
-        meta_lead_info = {field["name"]: field["values"][0] for field in field_data}
+        meta_lead_info = {field["name"]: field["values"][0] for field in field_data if "values" in field}
         
         new_lead = frappe.new_doc(form_doc.lead_doctype_reference)
 
