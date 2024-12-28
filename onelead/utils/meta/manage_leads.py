@@ -27,27 +27,23 @@ def process_logged_lead(doc, method):
                 "processing_status": "Unconfigured",
                 "error_message": f"No configuration found for form_id: {doc.form_id}"
             })
-        #   doc.db_set("processing_status", "Unconfigured")
-        #   doc.db_set("error_message", f"No configuration found for form_id: {doc.form_id}")
           return
       
       meta_config = frappe.get_single("Meta Webhook Config")
       if meta_config.page_flow:
+        if not doc.lead_form:
+            doc.db_set('lead_form', form_config.name)
         if doc.config_not_enabled:
           doc.db_set({
                 "processing_status": "Disabled",
                 "error_message": f"Configuration {doc.config_reference} is not Enabled"
             })
-        #   doc.db_set("processing_status", "Disabled")
-        #   doc.db_set("error_message", "Configuration {doc.config_reference} is not Enabled")
           return
         if not doc.config_reference:
             doc.db_set({
                     "processing_status": "Unconfigured", 
                     "error_message": "Configuration Reference is not set"
                 })
-            # doc.db_set("processing_status", "Unconfigured")
-            # doc.db_set("error_message", "Configuration Reference is not set")
             return
         
         if not form_config.lead_doctype_reference:
@@ -56,8 +52,6 @@ def process_logged_lead(doc, method):
                     "processing_status": "Unconfigured",
                     "error_message": "Lead Doc is not in form list or Configuration"
                 })
-            # doc.db_set("processing_status", "Unconfigured")
-            # doc.db_set("error_message", "Lead Doc is not set in form doc/Configuration")
             return
         if form_config.campaign:
             doc.db_set("campaign", form_config.campaign)
@@ -72,8 +66,6 @@ def process_logged_lead(doc, method):
                     "processing_status": "Disabled",
                     "error_message": f"Error in setting campaign for leadgen_id {doc.leadgen_id}"
                 })
-                # doc.db_set("processing_status", "Disabled")
-                # doc.db_set("error_message", f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
                 return
 
       # Use Meta SDK to fetch lead data
@@ -89,15 +81,11 @@ def process_logged_lead(doc, method):
                 "lead_doc_reference": lead_doc.name,
                 "error_message": ""
             })
-        #   doc.db_set("processing_status", "Processed")
-        #   doc.db_set("lead_doc_reference", lead_doc.name)
       else:
           doc.db_set({
                 "processing_status": "Error",
                 "error_message": "Failed to retrieve lead details from Meta API"
           })
-        #   doc.db_set("processing_status", "Error")
-        #   doc.db_set("error_message", "Failed to retrieve lead details from Meta API")
 
       if method == "manual":
           return {"status": "success", "message": "Lead processed successfully"}
@@ -107,8 +95,6 @@ def process_logged_lead(doc, method):
             "processing_status": "Error",
             "error_message": str(e)
       })
-    #   doc.db_set("processing_status", "Error")
-    #   doc.db_set("error_message", str(e))
       frappe.logger().error(f"Error in processing lead for leadgen_id {doc.leadgen_id}: {str(e)}", exc_info=True)
       if method == "manual":
           return {"status": "error", "message": str(e)}
@@ -199,9 +185,7 @@ def create_lead_entry(lead_data, form_doc, log_doc):
 
         # Insert the new lead and commit to database
         frappe.set_user("info@hairfreehairgrow.com")
-        frappe.logger().error(f"Creating lead document with data: {new_lead.as_dict()}")
         res = new_lead.insert(ignore_permissions=True)
-        frappe.logger().error(f"Creating lead document with data: {res}")
         frappe.db.commit()
         
         frappe.logger().info(f"Lead created successfully with name: {new_lead.name}")

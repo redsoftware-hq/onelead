@@ -21,7 +21,7 @@
   "config_reference",
   "config_doctype_name",
   "column_break_elsw",
-  "form",
+  "lead_form",
   "lead_doc_reference",
   "lead_doctype",
   "section_break_elsx",
@@ -160,9 +160,10 @@
    "read_only": 1
   },
   {
-   "fieldname": "form",
+   "fieldname": "lead_form",
    "fieldtype": "Link",
    "in_filter": 1,
+   "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Lead Form",
    "options": "Meta Lead Form"
@@ -170,7 +171,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-28 19:03:26.039729",
+ "modified": "2024-12-28 22:22:26.966580",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Lead Logs",

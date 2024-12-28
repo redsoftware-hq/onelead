@@ -61,9 +61,9 @@ def leadgen():
         # app_secret = frappe.db.get_single_value("Meta Webhook Config", "app_secret")
         signature = frappe.request.headers.get("X-Hub-Signature-256")
 
-        # if not verify_signature(signature, json.dumps(data), app_secret):
-        #     frappe.logger().warning("Invalid signature. Payload verification failed.")
-        #     return Response("Invalid signature", status=403)
+        if not verify_signature(signature, json.dumps(data), app_secret):
+            frappe.logger().warning("Invalid signature. Payload verification failed.")
+            return Response("Invalid signature", status=403)
 
         # Log incoming payload
         for entry in data.get("entry", []):
