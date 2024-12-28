@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "format:{page}",
  "creation": "2024-11-11 20:55:59.512388",
@@ -114,7 +115,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-11 18:34:06.320147",
+ "modified": "2024-12-28 19:19:33.557578",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ads Page Config",

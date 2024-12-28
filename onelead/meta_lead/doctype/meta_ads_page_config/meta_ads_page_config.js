@@ -22,61 +22,85 @@ frappe.ui.form.on("Meta Ads Page Config", {
         return;
       }
 
-      // Fetch forms linked to the selected page
       frappe.call({
-        method: "frappe.client.get_list",
+        method: "onelead.utils.meta.manage_ads.get_latest_forms_for_page",
         args: {
-          doctype: "Meta Lead Form",
-          filters: {
-            page: frm.doc.page, // Match the Page ID
-            status: "ACTIVE", // Form should be active
-            campaign: ["is", "set"] // Ensure a campaign is assigned
-          },
-          fields: ["name", "form_name", "campaign"]
+          page_id: frm.doc.page
         },
+        btn: $('.primary-action'),
+        freeze: true,
         callback: function (response) {
-          if (response.message.length > 0) {
-            const activeForms = response.message;
-            let upsertedForms = 0;
-
-            // Loop through the retrieved forms
-            activeForms.forEach(form => {
-              // Check if the campaign is active
-              frappe.call({
-                method: "frappe.client.get",
-                args: {
-                  doctype: "Meta Campaign",
-                  name: form.campaign
-                },
-                callback: function (campaignResponse) {
-                  const campaign = campaignResponse.message;
-                  if (campaign && campaign.status === "ACTIVE") {
-                    // Add or update the form in the mapping table
-                    const existingForm = frm.doc.forms_list.find(row => row.meta_lead_form === form.name);
-                    if (!existingForm) {
-                      // Add new row
-                      const newRow = frm.add_child("forms_list");
-                      newRow.meta_lead_form = form.name;
-                      newRow.campaign = form.campaign;
-                      upsertedForms++;
-                    } else {
-                      // Update existing row if necessary
-                      existingForm.campaign = form.campaign;
-                    }
-
-                    // Refresh the child table field
-                    frm.refresh_field("forms_list");
-                  }
-                }
-              });
-            });
-
-            frappe.msgprint(__(`${upsertedForms} forms have been populated and updated successfully.`));
+          // frappe.msgprint(f"Forms fetched for page {page_id}: {', '.join(form_names)}")
+          console.log(response)
+          if (response.message.length == 0) {
+            frappe.msgprint(__('No forms to fetch from Meta'))
           } else {
-            frappe.msgprint(__('No forms found matching the criteria.'));
+            frappe.msgprint(__(`Forms fetched for page ${frm.doc.page}: ${response.message.join(',')}`))
           }
+        },
+        error: function (err) {
+          frappe.msgpring(__(`Failed to Fetch forms from Meta, error: ${err}`))
         }
-      });
+      })
+      .then(r => {
+        // Fetch forms linked to the selected page
+        frappe.call({
+          method: "frappe.client.get_list",
+          args: {
+            doctype: "Meta Lead Form",
+            filters: {
+              page: frm.doc.page, // Match the Page ID
+              status: "ACTIVE", // Form should be active
+              campaign: ["is", "set"] // Ensure a campaign is assigned
+            },
+            fields: ["name", "form_name", "campaign"]
+          },
+          btn: $('.primary-action'),
+          freeze: true,
+          callback: function (response) {
+            if (response.message.length > 0) {
+              const activeForms = response.message;
+              let upsertedForms = 0;
+  
+              // Loop through the retrieved forms
+              activeForms.forEach(form => {
+                // Check if the campaign is active
+                frappe.call({
+                  method: "frappe.client.get",
+                  args: {
+                    doctype: "Meta Campaign",
+                    name: form.campaign
+                  },
+                  callback: function (campaignResponse) {
+                    const campaign = campaignResponse.message;
+                    if (campaign && campaign.status === "ACTIVE") {
+                      // Add or update the form in the mapping table
+                      const existingForm = frm.doc.forms_list.find(row => row.meta_lead_form === form.name);
+                      if (!existingForm) {
+                        // Add new row
+                        const newRow = frm.add_child("forms_list");
+                        newRow.meta_lead_form = form.name;
+                        newRow.campaign = form.campaign;
+                        upsertedForms++;
+                      } else {
+                        // Update existing row if necessary
+                        existingForm.campaign = form.campaign;
+                      }
+  
+                      // Refresh the child table field
+                      frm.refresh_field("forms_list");
+                    }
+                  }
+                });
+              });
+  
+              frappe.msgprint(__(`${upsertedForms} forms have been populated and updated successfully.`));
+            } else {
+              frappe.msgprint(__('No forms found matching the criteria.'));
+            }
+          }
+        });
+      })
     });
   }
 });

@@ -11,6 +11,15 @@ from facebook_business.adobjects.page import Page
 
 from frappe.utils.background_jobs import get_job
 
+@frappe.whitelist()
+def get_latest_forms_for_page(page_id):
+    try:
+        refresh_token()
+        forms = fetch_forms_based_on_page(page_id, {})
+        form_names = [form.get("form_name") for form in forms if form.get('isNew')]
+        return form_names
+    except:
+        frappe.throw("Failed to fetch forms for the page.")
 
 def is_token_short_lived(doc, user_access_token, app_access_token):
     url = f"{doc.meta_url}/debug_token?input_token={user_access_token}&access_token={user_access_token}"
@@ -127,7 +136,32 @@ def install_app_to_page(page_access_token, page_id, app_id):
             title="App Installation Failed",
             msg=f"Failed to install app on page {page_id}: {str(e)}"
         )
-    
+
+def refresh_token():
+    try:
+        meta_config = frappe.get_single("Meta Webhook Config")
+        app_id = meta_config.app_id
+        app_secret = meta_config.get_password("app_secret")  # Automatically decrypts
+        user_token = meta_config.get_password("user_access_token")
+
+        # Check if all fields has data.
+        if not app_id or not app_secret or not user_token:
+            frappe.throw("App ID, App Secret, and User Token must all be provided in Meta Webhook Config.")
+
+        token_data = is_token_short_lived(meta_config, user_token, app_secret)
+        meta_config.user_id = token_data["user_id"]
+        if token_data["is_short_lived"]:
+            frappe.logger().info('Meta got short lived token, updating...')
+            long_token_data = get_long_lived_user_token(meta_config, user_token, app_secret, app_id)
+            user_token = long_token_data["access_token"]
+        else:
+            meta_config.is_token_valid = token_data["is_valid"]
+            meta_config.save(ignore_permissions=True)
+        frappe.db.commit()
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Failed to Refresh Meta User Token")
+        frappe.throw(f"Failed to connect to Meta API: {str(e)}")
+
 # NOTE: By default page access_token are long lived and without expiry.
 # def get_long_lived_page_token(doc, user_long_token):
 #     try:
@@ -628,7 +662,8 @@ def fetch_forms_based_on_page(page_id, campaign_to_form_dict=None):
                 status = form.get("status", "")
 
                 # Create or update the form in Meta Lead Form DocType
-                form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form_id}) if frappe.db.exists("Meta Lead Form", {"form_id": form_id}) else frappe.new_doc("Meta Lead Form")
+                form_exists = frappe.db.exists("Meta Lead Form", {"form_id": form_id})
+                form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form_id}) if form_exists else frappe.new_doc("Meta Lead Form")
                 created_at = form.get("created_time", None)
                 if created_at:
                     form_doc.created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S%z").strftime("%Y-%m-%d %H:%M:%S")
@@ -647,7 +682,8 @@ def fetch_forms_based_on_page(page_id, campaign_to_form_dict=None):
 
                 form_doc.update(form_doc_payload)
                 form_doc.save(ignore_permissions=True)
-                form_ids.append(form_doc_payload)
+                # append with isNew flag
+                form_ids.append({"isNew": not form_exists, **form_doc_payload})
                 
             # Update total fetched count
             total_fetched += len(leadgen_forms)
@@ -668,7 +704,9 @@ def fetch_forms_based_on_page(page_id, campaign_to_form_dict=None):
 @frappe.whitelist()
 def page_flow_fetch_page_and_campaign(page_ids, ad_account_id):
     try:
-        campaign_to_form_dict = fetch_campaigns(page_id="", ad_account_id=ad_account_id, page_flow=True)
+        campaign_to_form_dict = {}
+        if ad_account_id:
+            campaign_to_form_dict = fetch_campaigns(page_id="", ad_account_id=ad_account_id, page_flow=True)
 
         # print('Campaign form list', campaign_to_form_dict)
         frappe.logger().info(f"campaign forms list {campaign_to_form_dict}")
