@@ -1,4 +1,5 @@
 import frappe
+import json
 from facebook_business.api import FacebookAdsApi
 from facebook_business.adobjects.lead import Lead
 from . import formatting_functions
@@ -80,12 +81,13 @@ def process_logged_lead(doc, method):
 
       if lead_data:
           # Log the data first  
-          doc.db_set("lead_payload", lead_data)
+          doc.db_set("lead_payload", json.dumps(lead_data))
           # Map and create lead Entry
           lead_doc = create_lead_entry(lead_data, form_config, doc)
           doc.db_set({
                 "processing_status": "Processed",
-                "lead_doc_reference": lead_doc.name
+                "lead_doc_reference": lead_doc.name,
+                "error_message": ""
             })
         #   doc.db_set("processing_status", "Processed")
         #   doc.db_set("lead_doc_reference", lead_doc.name)
@@ -130,7 +132,8 @@ def fetch_lead_from_meta(leadgen_id, meta_config):
         FacebookAdsApi.init(app_id, app_secret, user_token)
 
         lead = Lead(leadgen_id).api_get()
-        
+        # convert lead to dictionary/ json
+        lead = lead.export_all_data()
         return lead
 
     except Exception as e:
