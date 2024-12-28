@@ -114,6 +114,7 @@ def create_lead_log(data, lead_data, global_conf):
     if configured_form:
         form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form_id})
         lead_log.lead_doctype = form_doc.lead_doctype_reference
+        lead_log.lead_form = form_id
         if not lead_log.lead_doctype:
             lead_log.processing_status = "Unconfigured"
             lead_log.error_message = "No lead_doctype_reference found in 'Meta Lead Form'"

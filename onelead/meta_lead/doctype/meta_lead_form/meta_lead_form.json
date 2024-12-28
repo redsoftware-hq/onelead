@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "format:{form_id}",
  "creation": "2024-10-27 23:24:41.332611",
@@ -156,7 +157,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-19 21:49:38.500207",
+ "modified": "2024-12-28 18:42:11.538615",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form",

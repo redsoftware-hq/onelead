@@ -21,10 +21,13 @@
   "config_reference",
   "config_doctype_name",
   "column_break_elsw",
+  "form",
   "lead_doc_reference",
   "lead_doctype",
   "section_break_elsx",
-  "raw_payload"
+  "raw_payload",
+  "column_break_huct",
+  "lead_payload"
  ],
  "fields": [
   {
@@ -129,8 +132,9 @@
   },
   {
    "fieldname": "raw_payload",
-   "fieldtype": "Code",
-   "label": "Raw Payload"
+   "fieldtype": "JSON",
+   "label": "Raw Payload",
+   "read_only": 1
   },
   {
    "default": "Meta Ads Webhook Config",
@@ -144,11 +148,29 @@
    "fieldname": "config_not_enabled",
    "fieldtype": "Check",
    "label": "Config Not Enabled"
+  },
+  {
+   "fieldname": "column_break_huct",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lead_payload",
+   "fieldtype": "JSON",
+   "label": "Lead Payload",
+   "read_only": 1
+  },
+  {
+   "fieldname": "form",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_standard_filter": 1,
+   "label": "Lead Form",
+   "options": "Meta Lead Form"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-11 18:38:44.302668",
+ "modified": "2024-12-28 19:03:26.039729",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Lead Logs",
