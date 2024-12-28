@@ -3,7 +3,7 @@ from datetime import datetime
 from frappe.utils import now
 import phonenumbers
     
-def format_phone_number(phone_number, code="+1"):
+def format_phone_number(phone_number, code="+91"):
     """
     Format phone numbers to 'country code - local number' format.
     Args:
