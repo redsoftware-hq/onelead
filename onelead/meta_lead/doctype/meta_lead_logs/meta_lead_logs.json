@@ -1,0 +1,128 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{page_id}_{leadgen_id}",
+ "creation": "2024-09-01 16:08:57.426625",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "request_dump_section",
+  "json",
+  "detailed_log_section",
+  "page_id",
+  "leadgen_id",
+  "fetch_lead",
+  "meta_ads_config",
+  "lead_doctype_reference",
+  "column_break_vdeq",
+  "lead_entry_successful",
+  "error",
+  "lead_section",
+  "lead_json",
+  "lead_doctype"
+ ],
+ "fields": [
+  {
+   "fieldname": "request_dump_section",
+   "fieldtype": "Section Break",
+   "label": "Webhook data dump"
+  },
+  {
+   "fieldname": "json",
+   "fieldtype": "JSON",
+   "label": "json"
+  },
+  {
+   "fieldname": "detailed_log_section",
+   "fieldtype": "Section Break",
+   "label": "Detailed Log"
+  },
+  {
+   "fieldname": "page_id",
+   "fieldtype": "Data",
+   "label": "Page ID"
+  },
+  {
+   "fieldname": "leadgen_id",
+   "fieldtype": "Data",
+   "label": "Leadgen ID"
+  },
+  {
+   "fieldname": "fetch_lead",
+   "fieldtype": "Button",
+   "label": "fetch lead"
+  },
+  {
+   "fieldname": "meta_ads_config",
+   "fieldtype": "Link",
+   "label": "Meta Ads Config",
+   "options": "Meta Ad Campaign Config"
+  },
+  {
+   "fetch_from": "meta_ads_config.lead_doctype",
+   "fieldname": "lead_doctype_reference",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Lead Doctype Reference",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "lead_section",
+   "fieldtype": "Section Break",
+   "label": "Lead"
+  },
+  {
+   "fieldname": "lead_json",
+   "fieldtype": "JSON",
+   "label": "Lead JSON"
+  },
+  {
+   "fieldname": "lead_doctype",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Lead doctype",
+   "options": "lead_doctype_reference"
+  },
+  {
+   "default": "0",
+   "fieldname": "lead_entry_successful",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Lead Entry Successful"
+  },
+  {
+   "fieldname": "column_break_vdeq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Text",
+   "label": "Error"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-10-22 22:35:33.525876",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Lead Logs",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

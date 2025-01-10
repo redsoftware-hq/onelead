@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-27 23:40:16.602457",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "meta_field",
+  "lead_doctype_field",
+  "default_value",
+  "formatting_function"
+ ],
+ "fields": [
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "meta_field",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Meta Field",
+   "length": 500
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "lead_doctype_field",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Lead DocType Field"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "default_value",
+   "fieldtype": "Data",
+   "label": "Default Value"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "description": "Add custom python function to process and format meta field value for Lead DOCTYPE entry.",
+   "fieldname": "formatting_function",
+   "fieldtype": "Code",
+   "label": "Formatting function"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-11-13 01:56:28.812630",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Lead Form Mapping",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

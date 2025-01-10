@@ -6,8 +6,34 @@ app_email = "dev@redsoftware.in"
 app_license = "mit"
 # required_apps = []
 
+
+#  Allowed APIs
+csrf_exempt = {
+    "onelead.utils.meta_lead.webhook": True,
+    "onelead.utils.google_lead.webhook": True
+}
+
+webhooks = [
+    {"method": "POST", "path": "onelead.utils.meta_lead.webhook"},
+    {"method": "GET", "path": "onelead.utils.meta_lead.webhook"},
+    {"method": "POST", "path": "onelead.utils.google_lead.webhook"},
+    {"method": "GET", "path": "onelead.utils.google_lead.webhook"}
+]
+
+
+doc_events = {
+    "Meta Lead Form": {
+        "before_save": "onelead.utils.meta.manage_ads.fetch_form_details"
+    },
+    "Meta Webhook Lead Logs": {
+        "after_insert": "onelead.utils.meta.manage_leads.process_logged_lead"
+    }
+}
+
 # Includes in <head>
 # ------------------
+
+app_include_css = "/assets/onelead/css/meta.css"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/onelead/css/onelead.css"

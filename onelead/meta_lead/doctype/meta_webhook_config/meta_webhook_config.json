@@ -1,0 +1,131 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-09-07 00:38:58.892074",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "meta_url",
+  "meta_api_version",
+  "webhook_verify_token",
+  "app_id",
+  "app_secret",
+  "app_name",
+  "is_enabled",
+  "page_flow",
+  "column_break_blmf",
+  "user_access_token",
+  "user_id",
+  "token_expiry",
+  "is_token_valid",
+  "connect_facebook"
+ ],
+ "fields": [
+  {
+   "default": "https://graph.facebook.com",
+   "fieldname": "meta_url",
+   "fieldtype": "Data",
+   "label": "Meta URL"
+  },
+  {
+   "default": "v20.0",
+   "fieldname": "meta_api_version",
+   "fieldtype": "Data",
+   "label": "Meta API Version "
+  },
+  {
+   "fieldname": "webhook_verify_token",
+   "fieldtype": "Data",
+   "label": "Webhook Verify Token"
+  },
+  {
+   "fieldname": "app_id",
+   "fieldtype": "Data",
+   "label": "App ID"
+  },
+  {
+   "fieldname": "app_name",
+   "fieldtype": "Data",
+   "label": "App Name"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_enabled",
+   "fieldtype": "Check",
+   "label": "Is Enabled"
+  },
+  {
+   "fieldname": "app_secret",
+   "fieldtype": "Password",
+   "label": "App Secret"
+  },
+  {
+   "fieldname": "connect_facebook",
+   "fieldtype": "Button",
+   "label": "Connect Facebook"
+  },
+  {
+   "fieldname": "user_access_token",
+   "fieldtype": "Password",
+   "label": "User Access Token",
+   "length": 500
+  },
+  {
+   "default": "1",
+   "fieldname": "page_flow",
+   "fieldtype": "Check",
+   "label": "Page Flow"
+  },
+  {
+   "fieldname": "column_break_blmf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "user_id",
+   "fieldtype": "Data",
+   "label": "User Id",
+   "read_only": 1
+  },
+  {
+   "fieldname": "token_expiry",
+   "fieldtype": "Datetime",
+   "label": "Token Expiry",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_token_valid",
+   "fieldtype": "Check",
+   "label": "Is Token Valid",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [
+  {
+   "link_doctype": "Meta Ads Page Config",
+   "link_fieldname": "page"
+  }
+ ],
+ "modified": "2024-11-16 01:11:29.074410",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Webhook Config",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

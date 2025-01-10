@@ -1,0 +1,37 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-27 22:58:53.261670",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "meta_page",
+  "page_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "meta_page",
+   "fieldtype": "Link",
+   "label": "Meta Page",
+   "options": "Meta Page"
+  },
+  {
+   "fetch_from": "meta_page.page_name",
+   "fieldname": "page_name",
+   "fieldtype": "Read Only",
+   "label": "Page Name"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-10-27 23:04:55.101482",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Meta Ad Account X Page",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,17 @@
+.btn-meta {
+    background-color: #4267B2 !important;
+    color: white !important;
+    font-weight: bold;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease !important;
+}
+.btn-meta:hover {
+    background-color: #365899;
+}
+.btn-meta:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
