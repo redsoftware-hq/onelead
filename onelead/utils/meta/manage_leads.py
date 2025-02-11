@@ -139,6 +139,9 @@ def manual_retry_lead_processing(docname=None, doc=None):
         if not doc:
             frappe.throw("No valid doc or docname provided for manual retry.")
 
+        if doc.processing_status in ["Processed", "Pending"]:
+            return {"status": "success", "message": "Lead already processed or is pending."}
+
         # If the doc is "Unconfigured" or missing key fields (like config_reference or lead_doctype),
         # attempt to re-derive them from current Meta Webhook Config settings.
         if doc.processing_status in ["Unconfigured", "Disabled"] or not doc.config_reference or not doc.lead_doctype:
