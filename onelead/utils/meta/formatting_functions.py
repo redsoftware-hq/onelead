@@ -28,6 +28,10 @@ def format_phone_number(phone_number, default_region="IN"):
             parsed_number = phonenumbers.parse(cleaned_number, None)
         else:
             parsed_number = phonenumbers.parse(cleaned_number, default_region)  # Assume local number
+            national_number = str(parsed_number.national_number)
+            if cleaned_number.startswith(str(parsed_number.country_code)):  # Avoid adding duplicate country code
+                cleaned_number = national_number
+                parsed_number = phonenumbers.parse(cleaned_number, default_region)
 
         # Check if the number is valid
         if not phonenumbers.is_possible_number(parsed_number):
