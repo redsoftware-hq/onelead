@@ -117,6 +117,10 @@ def create_lead_log(data, lead_data, global_conf):
         form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form_id})
         lead_log.lead_doctype = form_doc.lead_doctype_reference
         lead_log.lead_form = form_id
+        if form_doc.campaign:
+            lead_log.campaign = form_doc.campaign
+        if form_doc.ads:
+            lead_log.ad = form_doc.ads
         if not lead_log.lead_doctype:
             lead_log.processing_status = "Unconfigured"
             lead_log.error_message = "No lead_doctype_reference found in 'Meta Lead Form'"
@@ -129,9 +133,7 @@ def create_lead_log(data, lead_data, global_conf):
             lead_log.campaign = config.campaign
     else:
         lead_log.processing_status = "Unconfigured"
-        lead_log.error_message = ("No configuration found for form_id in 'Meta Lead Form'" 
-                                  if not configured_form else 
-                                  "No configuration found for page_id and form_id in 'Meta Ads Webhook Config'")
+        lead_log.error_message = ("No configuration found for form_id in 'Meta Lead Form'" if not configured_form else "No configuration found for page_id and form_id in 'Meta Ads Webhook Config'")
 
     lead_log.insert(ignore_permissions=True)
 

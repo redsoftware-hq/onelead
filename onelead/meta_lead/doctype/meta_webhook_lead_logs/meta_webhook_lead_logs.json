@@ -20,6 +20,7 @@
   "campaign",
   "config_reference",
   "config_doctype_name",
+  "ad",
   "column_break_elsw",
   "lead_form",
   "lead_doc_reference",
@@ -167,11 +168,17 @@
    "in_standard_filter": 1,
    "label": "Lead Form",
    "options": "Meta Lead Form"
+  },
+  {
+   "fieldname": "ad",
+   "fieldtype": "Link",
+   "label": "Ad",
+   "options": "Meta Ads"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-28 22:22:26.966580",
+ "modified": "2025-02-11 23:41:55.310908",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Lead Logs",

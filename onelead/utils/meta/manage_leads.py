@@ -6,6 +6,97 @@ from . import formatting_functions
 from ..meta_lead import get_lead_config
 # from your_meta_sdk_module import MetaAdsAPI 
 
+
+# ================== Utility Functions ==================
+
+def ensure_campaign_exists(form_doc):
+    """Ensure a campaign exists for the given Meta Lead Form."""
+    try:
+        # Generate campaign ID based on form name and form ID
+        campaign_id = f"{form_doc.form_name.replace(' ', '_')}_{form_doc.form_id}"
+        campaign_name = form_doc.form_name or f"Campaign for {form_doc.form_id}"
+        campaign_objective = "OUTCOME_LEADS"
+
+        # Check if a campaign with the generated ID already exists
+        existing_campaign = frappe.db.exists("Meta Campaign", {"campaign_id": campaign_id})
+
+        if existing_campaign:
+            return existing_campaign  # Return the existing campaign ID
+        
+        # Create a new campaign document
+        new_campaign = frappe.get_doc({
+            "doctype": "Meta Campaign",
+            "campaign_id": campaign_id,
+            "campaign_name": campaign_name,
+            "campaign_objective": campaign_objective,
+            "status": "ACTIVE",
+            "has_lead_form": 1,
+            "self_created": 1,
+            "assignee_doctype": form_doc.assignee_doctype,
+            "assign_to": form_doc.assign_to
+        })
+        
+        new_campaign.insert(ignore_permissions=True)
+        frappe.db.commit()
+
+        return new_campaign.name  # Return new campaign ID
+
+    except Exception as e:
+        frappe.logger().error(f"Error ensuring campaign exists for form_id {form_doc.form_id}: {str(e)}")
+        return None
+
+def ensure_ads_exists(form_doc, ads_id=None):
+    """Ensure an ad exists for the given Meta Lead Form."""
+    try:
+        # Generate Ads ID and Name
+        ads_id = ads_id or f"{form_doc.form_name.replace(' ', '_')}_{form_doc.form_id}"
+        ads_name = form_doc.form_name or f"Ads for {form_doc.form_id}"
+
+        # Check if an Ad with this ID exists
+        existing_ads = frappe.db.exists("Meta Ads", {"ads_id": ads_id})
+
+        if existing_ads:
+            existing_ads_doc = frappe.get_doc("Meta Ads", existing_ads)
+            if existing_ads_doc.campaign:
+                form_doc.db_set("campaign", existing_ads_doc.campaign)
+            elif form_doc.campaign and not existing_ads_doc.campaign:
+                existing_ads_doc.db_set("campaign", form_doc.campaign)
+            elif not existing_ads_doc.campaign and not form_doc.campaign:
+                campaign_id = ensure_campaign_exists(form_doc)
+                if not campaign_id:
+                    frappe.throw(f"Could not create or find a campaign for form_id: {form_doc.form_id}")
+                form_doc.db_set("campaign", campaign_id)
+                existing_ads_doc.db_set("campaign", campaign_id)
+            return existing_ads  # Return the existing Ads ID
+
+        # If the campaign is missing, create it first
+        if not form_doc.campaign:
+            campaign_id = ensure_campaign_exists(form_doc)
+            if campaign_id:
+                form_doc.db_set("campaign", campaign_id)
+            else:
+                frappe.throw(f"Could not create or find a campaign for form_id: {form_doc.form_id}")
+
+        # Create a new Meta Ads document
+        new_ads = frappe.get_doc({
+            "doctype": "Meta Ads",
+            "ads_id": ads_id,
+            "ads_name": ads_name,
+            "status": form_doc.status if form_doc.status else "PAUSED",
+            "campaign": form_doc.campaign or campaign_id,
+            "has_lead_form": 1
+        })
+
+        new_ads.insert(ignore_permissions=True)
+        frappe.db.commit()
+
+        return new_ads.name  # Return new Ads ID
+
+    except Exception as e:
+        frappe.logger().error(f"Error ensuring Ads exists for form_id {form_doc.form_id}: {str(e)}")
+        return None
+
+
 @frappe.whitelist()
 def bulk_manual_retry_lead_processing(docnames):
     """
@@ -127,34 +218,42 @@ def process_logged_lead(doc, method):
           doc.db_set("processing_status", "Unconfigured")
           doc.db_set("error_message", f"No configuration found for form_id: {doc.form_id}")
           return
+
+      # Ensure ads exists and update doc.ad if necessary
+      if not doc.ad:
+          ads_id = ensure_ads_exists(form_config)
+          if ads_id:
+              doc.db_set("ad", ads_id)
       
       meta_config = frappe.get_single("Meta Webhook Config")
       if meta_config.page_flow:
         if doc.config_not_enabled:
           doc.db_set("processing_status", "Disabled")
-          doc.db_set("error_message", "Configuration {doc.config_reference} is not Enabled")
+          doc.db_set("error_message", "Configuration can be found, but {doc.config_reference} is not Enabled")
           return
         if not doc.config_reference:
-            doc.db_set("processing_status", "Disabled")
-            doc.db_set("error_message", "Configuration Reference is not set")
+            doc.db_set("processing_status", "Unconfigured")
+            doc.db_set("error_message", "Configuration Reference is not set in below fileds")
             return
         
         if not form_config.lead_doctype_reference:
-            doc.db_set("processing_status", "Disabled")
-            doc.db_set("error_message", "Lead Doc is not set in form doc/Configuration")
+            doc.db_set("processing_status", "Unconfigured")
+            doc.db_set("error_message", "Lead Doc is not set in Meta Lead Form doc/Configuration")
             return
-        if form_config.campaign:
-            doc.db_set("campaign", form_config.campaign)
-        else:
-            try:
-                ads_doc = frappe.get_doc("Meta Ads", doc.ad_id)
-                form_config.db_set("campaign", ads_doc.campaign)
-                doc.db_set("campaign", ads_doc.campaign)
-            except Exception as e:
-                frappe.logger().error(f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
-                doc.db_set("processing_status", "Disabled")
-                doc.db_set("error_message", f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
-                return
+        if not doc.ad and not doc.campaign:
+            doc.db_set("processing_status", "Unconfigured")
+            doc.db_set("error_message", "Ad and Campaign is not set in log doc")
+            return
+        # else:
+        #     try:
+        #         ads_doc = frappe.get_doc("Meta Ads", doc.ad_id)
+        #         form_config.db_set("campaign", ads_doc.campaign)
+        #         doc.db_set("campaign", ads_doc.campaign)
+        #     except Exception as e:
+        #         frappe.logger().error(f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
+        #         doc.db_set("processing_status", "Disabled")
+        #         doc.db_set("error_message", f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
+        #         return
 
       # Use Meta SDK to fetch lead data
       lead_data = fetch_lead_from_meta(doc.leadgen_id, meta_config)
