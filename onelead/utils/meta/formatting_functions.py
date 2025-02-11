@@ -2,35 +2,43 @@ import re
 from datetime import datetime
 from frappe.utils import now
 import phonenumbers
-    
-def format_phone_number(phone_number, code="+91"):
+
+
+def format_phone_number(phone_number, default_region="IN"):
     """
     Format phone numbers to 'country code - local number' format.
+    
     Args:
         phone_number (str): The raw phone number string.
         default_region (str): Default region code if the country code is missing.
+        
     Returns:
         str: Formatted phone number with 'country code - local number'.
     """
-    # Clean default_code by removing non-numeric characters
-    code = re.sub(r'[^\d]', '', code)
+    # Preserve the leading `+` if present, but remove everything else
+    phone_number = phone_number.strip()  # Remove surrounding whitespace
+    if phone_number.startswith("+"):
+        cleaned_number = re.sub(r'[^\d+]', '', phone_number)  # Remove everything except digits & `+`
+    else:
+        cleaned_number = re.sub(r'\D', '', phone_number)  # Remove all non-digit characters
 
-    # Remove all non-numeric characters except the plus sign in phone_number
-    cleaned_number = re.sub(r'[^\d+]', '', phone_number)
-    
-    # If the number starts without '+', assume it's missing the country code
-    if not cleaned_number.startswith('+'):
-        cleaned_number = f"+{code}{cleaned_number}"
-    
     try:
-        # Parse the phone number
-        parsed_number = phonenumbers.parse(cleaned_number)
-        
+        # If number starts with '+', parse as an international number
+        if cleaned_number.startswith('+'):
+            parsed_number = phonenumbers.parse(cleaned_number, None)
+        else:
+            parsed_number = phonenumbers.parse(cleaned_number, default_region)  # Assume local number
+
+        # Check if the number is valid
+        if not phonenumbers.is_possible_number(parsed_number):
+            return "Invalid number"
+
         # Get the country code and national number
         country_code = parsed_number.country_code
         national_number = parsed_number.national_number
-        
+
         return f"+{country_code}-{national_number}"
+
     except phonenumbers.NumberParseException:
         return "Invalid number"
 
