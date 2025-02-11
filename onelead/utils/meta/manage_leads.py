@@ -223,6 +223,7 @@ def process_logged_lead(doc, method):
       if not doc.ad:
           ads_id = ensure_ads_exists(form_config)
           if ads_id:
+              form_config.db_set("ads", ads_id)
               doc.db_set("ad", ads_id)
       
       meta_config = frappe.get_single("Meta Webhook Config")
