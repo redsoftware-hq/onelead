@@ -46,7 +46,7 @@ def ensure_campaign_exists(form_doc):
         frappe.logger().error(f"Error ensuring campaign exists for form_id {form_doc.form_id}: {str(e)}")
         return None
 
-def ensure_ads_exists(form_doc, ads_id=None):
+def ensure_ads_exists(form_doc, doc, ads_id=None):
     """Ensure an ads exists for the given Meta Lead Form."""
     try:
         current_date = datetime.now().strftime("%d%m%Y")
@@ -72,6 +72,7 @@ def ensure_ads_exists(form_doc, ads_id=None):
                     frappe.throw(f"Could not create or find a campaign for form_id: {form_doc.form_id}")
                 # 1a. remove form_doc.camapgin under form M:M campaign deps.
                 # form_doc.db_set("campaign", campaign_id)
+                doc.db_set("campaign", campaign_id)
                 existing_ads_doc.db_set("campaign", campaign_id)
             return existing_ads  # Return the existing Ads ID
 
@@ -235,11 +236,13 @@ def process_logged_lead(doc, method):
 
       # Ensure ads exists and update doc.ads if necessary
       if not doc.ads:
-        ads_id = ensure_ads_exists(form_config)
+        ads_id = ensure_ads_exists(form_config, doc, doc.ad_id)
         if ads_id:
             #   1a. remove form_config.campaign for M:M relationship
             # form_config.db_set("ads", ads_id)
             doc.db_set("ads", ads_id)
+    #   if not doc.camapign:
+          
       
       meta_config = frappe.get_single("Meta Webhook Config")
       if meta_config.page_flow:
@@ -258,7 +261,7 @@ def process_logged_lead(doc, method):
         #     doc.db_set("processing_status", "Unconfigured")
         #     doc.db_set("error_message", "Lead Doc is not set in Meta Lead Form doc/Configuration")
         #     return
-        if not doc.ads and not doc.campaign:
+        if not doc.ads or not doc.campaign:
             doc.db_set("processing_status", "Unconfigured")
             doc.db_set("error_message", "Ads and Campaign is not set in log doc")
             return
@@ -341,10 +344,10 @@ def process_default_value(default_value, log_doc, form_doc):
                 if field_value not in [None, ""]:
                     return field_value
     
-    # If not found in any document, log a warning and return the original default_value
-    frappe.logger().warning(
-        f"Field '{default_field_name}' not found or is empty in {log_doc.config_doctype_name}, Meta Lead Form, and Ads Config."
-    )
+        # If not found in any document, log a warning and return the original default_value
+        frappe.logger().warning(
+            f"Field '{default_field_name}' not found or is empty in {log_doc.config_doctype_name}, Meta Lead Form, and Ads Config."
+        )
     return default_value
 
 def create_lead_entry(lead_data, form_doc, log_doc):
