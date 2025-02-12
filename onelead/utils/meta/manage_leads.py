@@ -1,5 +1,6 @@
 import frappe
 import json
+from datetime import datetime
 from facebook_business.api import FacebookAdsApi
 from facebook_business.adobjects.lead import Lead
 from . import formatting_functions
@@ -46,36 +47,43 @@ def ensure_campaign_exists(form_doc):
         return None
 
 def ensure_ads_exists(form_doc, ads_id=None):
-    """Ensure an ad exists for the given Meta Lead Form."""
+    """Ensure an ads exists for the given Meta Lead Form."""
     try:
+        current_date = datetime.now().strftime("%d%m%Y")
         # Generate Ads ID and Name
         ads_id = ads_id or f"{form_doc.form_name.replace(' ', '_')}_{form_doc.form_id}"
-        ads_name = form_doc.form_name or f"Ads for {form_doc.form_id}"
+        ads_name = f"{form_doc.form_name.replace(' ', '_').replace('-', '_')}_{current_date}" if form_doc.form_name else f"Ads_for_{form_doc.form_id}_{current_date}"
 
-        # Check if an Ad with this ID exists
+        # Check if an Ads with this ID exists
         existing_ads = frappe.db.exists("Meta Ads", {"ads_id": ads_id})
 
         if existing_ads:
             existing_ads_doc = frappe.get_doc("Meta Ads", existing_ads)
-            if existing_ads_doc.campaign:
-                form_doc.db_set("campaign", existing_ads_doc.campaign)
-            elif form_doc.campaign and not existing_ads_doc.campaign:
-                existing_ads_doc.db_set("campaign", form_doc.campaign)
-            elif not existing_ads_doc.campaign and not form_doc.campaign:
+            # if existing_ads_doc.campaign:
+            #     # TODO: 1a. remove this under form M:M campaign deps.
+            #     form_doc.db_set("campaign", existing_ads_doc.campaign)
+            #     # 1a.remove form_doc.campaign condition. 
+            # elif form_doc.campaign and not existing_ads_doc.campaign:
+            #     existing_ads_doc.db_set("campaign", form_doc.campaign)
+            # elif not existing_ads_doc.campaign and not form_doc.campaign:
+            if not existing_ads_doc.campaign:
                 campaign_id = ensure_campaign_exists(form_doc)
                 if not campaign_id:
                     frappe.throw(f"Could not create or find a campaign for form_id: {form_doc.form_id}")
-                form_doc.db_set("campaign", campaign_id)
+                # 1a. remove form_doc.camapgin under form M:M campaign deps.
+                # form_doc.db_set("campaign", campaign_id)
                 existing_ads_doc.db_set("campaign", campaign_id)
             return existing_ads  # Return the existing Ads ID
 
         # If the campaign is missing, create it first
-        if not form_doc.campaign:
-            campaign_id = ensure_campaign_exists(form_doc)
-            if campaign_id:
-                form_doc.db_set("campaign", campaign_id)
-            else:
-                frappe.throw(f"Could not create or find a campaign for form_id: {form_doc.form_id}")
+        # TODO: 1a. remove form_doc.campaign condition, directly make sure that campaign exists and assign it to ads.
+        # if not form_doc.campaign:
+        campaign_id = ensure_campaign_exists(form_doc)
+        # if campaign_id:
+        #     form_doc.db_set("campaign", campaign_id)
+        # else:
+        if not campaign_id:
+            frappe.throw(f"Could not create or find a campaign for form_id: {form_doc.form_id}")
 
         # Create a new Meta Ads document
         new_ads = frappe.get_doc({
@@ -83,7 +91,8 @@ def ensure_ads_exists(form_doc, ads_id=None):
             "ads_id": ads_id,
             "ads_name": ads_name,
             "status": form_doc.status if form_doc.status else "PAUSED",
-            "campaign": form_doc.campaign or campaign_id,
+            # "campaign": form_doc.campaign or campaign_id,
+            "campaign": campaign_id,
             "has_lead_form": 1
         })
 
@@ -190,6 +199,7 @@ def reconfigure_lead_log(doc):
             if not config.enable:
                 doc.db_set("config_not_enabled", 1)
             
+            # If Campaign is set Globally in the config, set it in the log doc
             if hasattr(config, "campaign") and config.campaign:
                 doc.db_set("campaign", config.campaign)
         else:
@@ -202,8 +212,8 @@ def reconfigure_lead_log(doc):
                 )
             )
         
-        # Optionally, set the doc back to "Pending" to let the process_logged_lead handle it
-        doc.db_set("processing_status", "Pending")
+        # set the doc back to "Pending" to let the process_logged_lead handle it
+        # doc.db_set("processing_status", "Pending")
 
     except Exception as e:
         frappe.logger().error(f"Error in reconfiguring lead log {doc.name}: {str(e)}", exc_info=True)
@@ -217,17 +227,19 @@ def process_logged_lead(doc, method):
       form_config = frappe.get_doc("Meta Lead Form", {"form_id": doc.form_id})
 
       # If form configuration is not found, update log status and exit - already configured. just setting up error.
-      if not form_config:
-          doc.db_set("processing_status", "Unconfigured")
-          doc.db_set("error_message", f"No configuration found for form_id: {doc.form_id}")
-          return
+      # TODO: 1b. remove this condition, as it's already handled in reconfigure_lead_log, and create_lead_log.
+    #   if not form_config:
+    #       doc.db_set("processing_status", "Unconfigured")
+    #       doc.db_set("error_message", f"No form found in `Meta Lead Form` for form_id: {doc.form_id}, please fetch forms again to get the latest forms.")
+    #       return
 
-      # Ensure ads exists and update doc.ad if necessary
-      if not doc.ad:
-          ads_id = ensure_ads_exists(form_config)
-          if ads_id:
-              form_config.db_set("ads", ads_id)
-              doc.db_set("ad", ads_id)
+      # Ensure ads exists and update doc.ads if necessary
+      if not doc.ads:
+        ads_id = ensure_ads_exists(form_config)
+        if ads_id:
+            #   1a. remove form_config.campaign for M:M relationship
+            # form_config.db_set("ads", ads_id)
+            doc.db_set("ads", ads_id)
       
       meta_config = frappe.get_single("Meta Webhook Config")
       if meta_config.page_flow:
@@ -235,18 +247,20 @@ def process_logged_lead(doc, method):
           doc.db_set("processing_status", "Disabled")
           doc.db_set("error_message", "Configuration can be found, but {doc.config_reference} is not Enabled")
           return
-        if not doc.config_reference:
-            doc.db_set("processing_status", "Unconfigured")
-            doc.db_set("error_message", "Configuration Reference is not set in below fileds")
-            return
+
+        # TODO: 1b. remove this condition, as it's already handled in reconfigure_lead_log, and create_lead_log.
+        # if not doc.config_reference:
+        #     doc.db_set("processing_status", "Unconfigured")
+        #     doc.db_set("error_message", "Configuration Reference is not set in below fileds")
+        #     return
         
-        if not form_config.lead_doctype_reference:
+        # if not form_config.lead_doctype_reference:
+        #     doc.db_set("processing_status", "Unconfigured")
+        #     doc.db_set("error_message", "Lead Doc is not set in Meta Lead Form doc/Configuration")
+        #     return
+        if not doc.ads and not doc.campaign:
             doc.db_set("processing_status", "Unconfigured")
-            doc.db_set("error_message", "Lead Doc is not set in Meta Lead Form doc/Configuration")
-            return
-        if not doc.ad and not doc.campaign:
-            doc.db_set("processing_status", "Unconfigured")
-            doc.db_set("error_message", "Ad and Campaign is not set in log doc")
+            doc.db_set("error_message", "Ads and Campaign is not set in log doc")
             return
         # else:
         #     try:
@@ -317,16 +331,20 @@ def process_default_value(default_value, log_doc, form_doc):
         # Extract the field name after "field:" prefix
         default_field_name = default_value.split("field:")[1].strip()
         
-        # Retrieve the field value from ads_config_doc
-        if hasattr(form_doc, default_field_name):
-            field_value = getattr(form_doc, default_field_name)
-            return field_value
-        elif hasattr(ads_config_doc, default_field_name):
-            field_value = getattr(ads_config_doc, default_field_name)
-            return field_value
-        else:
-            frappe.logger().warning(f"Field {default_field_name} not found in {log_doc.config_doctype_name} and Meta Lead Form")
-            return default_value
+        # Retrieve the field value from any of the below documents
+        # Priority order: log_doc → form_doc → ads_config_doc
+        for source in (log_doc, form_doc, ads_config_doc):
+            if hasattr(source, default_field_name):
+                field_value = getattr(source, default_field_name)
+
+                # If the field exists but is None or empty, continue checking the next source
+                if field_value not in [None, ""]:
+                    return field_value
+    
+    # If not found in any document, log a warning and return the original default_value
+    frappe.logger().warning(
+        f"Field '{default_field_name}' not found or is empty in {log_doc.config_doctype_name}, Meta Lead Form, and Ads Config."
+    )
     return default_value
 
 def create_lead_entry(lead_data, form_doc, log_doc):

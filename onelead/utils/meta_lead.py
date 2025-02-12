@@ -117,14 +117,20 @@ def create_lead_log(data, lead_data, global_conf):
         form_doc = frappe.get_doc("Meta Lead Form", {"form_id": form_id})
         lead_log.lead_doctype = form_doc.lead_doctype_reference
         lead_log.lead_form = form_id
-        if form_doc.campaign:
-            lead_log.campaign = form_doc.campaign
-        if form_doc.ads:
-            lead_log.ad = form_doc.ads
+        # 1a. remove form_doc.campaign for M:M relationship
+        # if form_doc.campaign:
+        #     lead_log.campaign = form_doc.campaign
+        # 1a. add form_doc.ads for M:M relationship
+        # if form_doc.ads:
+        #     lead_log.ad = form_doc.ads
         if not lead_log.lead_doctype:
             lead_log.processing_status = "Unconfigured"
-            lead_log.error_message = "No lead_doctype_reference found in 'Meta Lead Form'"
-
+            lead_log.error_message = "No `Lead Doctype Reference` found in 'Meta Lead Form'"
+    else:
+        lead_log.processing_status = "Unconfigured"
+        lead_log.error_message = f"No form found in `Meta Lead Form` for form_id: {lead_log.form_id}, please fetch forms again to get the latest forms."
+        return
+    
     if config:
         lead_log.config_reference = config.name
         if not config.get('enable'):
