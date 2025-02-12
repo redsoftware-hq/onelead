@@ -234,6 +234,10 @@ def process_logged_lead(doc, method):
     #       doc.db_set("processing_status", "Unconfigured")
     #       doc.db_set("error_message", f"No form found in `Meta Lead Form` for form_id: {doc.form_id}, please fetch forms again to get the latest forms.")
     #       return
+      if not doc.camapign:
+        campaign_id = ensure_campaign_exists(form_config)
+        if campaign_id:
+            doc.db_set("campaign", campaign_id)
 
       # Ensure ads exists and update doc.ads if necessary
       if not doc.ads:
