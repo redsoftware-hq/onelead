@@ -80,6 +80,7 @@ def ensure_ads_exists(form_doc, doc, ads_id=None):
         # TODO: 1a. remove form_doc.campaign condition, directly make sure that campaign exists and assign it to ads.
         # if not form_doc.campaign:
         campaign_id = ensure_campaign_exists(form_doc)
+        doc.db_set("campaign", campaign_id)
         # if campaign_id:
         #     form_doc.db_set("campaign", campaign_id)
         # else:
