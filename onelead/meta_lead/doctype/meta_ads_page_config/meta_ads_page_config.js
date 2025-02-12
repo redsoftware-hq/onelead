@@ -51,8 +51,10 @@ frappe.ui.form.on("Meta Ads Page Config", {
             filters: {
               page: frm.doc.page, // Match the Page ID
               status: "ACTIVE", // Form should be active
-              campaign: ["is", "set"] // Ensure a campaign is assigned
+              // 1a. remove campaign in light of M:M relation of campaign and form
+              // campaign: ["is", "set"] // Ensure a campaign is assigned
             },
+            // TODO: 1a. remove campaign in light of M:M relation of campaign and form
             fields: ["name", "form_name", "campaign"]
           },
           btn: $('.primary-action'),
@@ -65,6 +67,7 @@ frappe.ui.form.on("Meta Ads Page Config", {
               // Loop through the retrieved forms
               activeForms.forEach(form => {
                 // Check if the campaign is active
+                // TODO: 1a. Remove the logic of campaign in light of M;M relation.
                 frappe.call({
                   method: "frappe.client.get",
                   args: {

@@ -537,6 +537,7 @@ def fetch_forms_based_on_selection(campaign_id, ad_account_id, page_id, ad_id=No
                 # "doctype": "Meta Lead Form",
                 "form_id": form["id"],
                 # "ads": form["ads_id"]  #commented out, as there needs to be hook for checking Ads Link present before insert
+                # TODO: 1c. Remove campaign mapping, once the changes are tested without camapign id.
                 "campaign": campaign_id
             })
             form_doc.save(ignore_permissions=True)
@@ -584,6 +585,7 @@ def create_meta_ads_page_config_doc(page_id, forms):
             for form in forms:
                 form_id = form.get("form_id")
                 status = form.get("status")
+                # TODO: 1c. Remove campaign mapping, once the changes are tested without camapign id.
                 campaign = form.get("campaign", None)
                 # created_at = form.get("created_at")
 
@@ -593,6 +595,7 @@ def create_meta_ads_page_config_doc(page_id, forms):
                 
                 # print("check if it's value present::: ", form)
                 # check if the form has campaign then only add to forms_list
+                # TODO: 1c. Remove campaign mapping, once the changes are tested without camapign id.
                 if not campaign:
                     continue
 
@@ -677,6 +680,7 @@ def fetch_forms_based_on_page(page_id, campaign_to_form_dict=None):
 
                 if campaign_to_form_dict and campaign_to_form_dict.get(form_id, None):
                     # print("ADD Campaign:::, ", campaign_to_form_dict.get(form_id).get('id'))
+                    # TODO: 1c. Remove campaign mapping, once the changes are tested without camapign id.
                     form_doc_payload["campaign"] = campaign_to_form_dict.get(form_id).get('id')
                 # print('added to form_ids', form_doc_payload)
 
