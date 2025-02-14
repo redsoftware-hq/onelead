@@ -257,15 +257,17 @@ def process_logged_lead(doc, method):
           return
 
         # TODO: 1b. remove this condition, as it's already handled in reconfigure_lead_log, and create_lead_log.
-        # if not doc.config_reference:
-        #     doc.db_set("processing_status", "Unconfigured")
-        #     doc.db_set("error_message", "Configuration Reference is not set in below fileds")
-        #     return
+        # Rquired last check, if form_config is not found, then exit.
+        if not doc.config_reference:
+            doc.db_set("processing_status", "Unconfigured")
+            doc.db_set("error_message", "Configuration is not mapped properly, please make sure that form with form_id {doc.form_id} is mapped to a config of page {doc.page_id}")
+            return
         
-        # if not form_config.lead_doctype_reference:
-        #     doc.db_set("processing_status", "Unconfigured")
-        #     doc.db_set("error_message", "Lead Doc is not set in Meta Lead Form doc/Configuration")
-        #     return
+        # This is required for adding Lead link to the log doc. so checks to make sure it exists.
+        if not form_config.lead_doctype_reference:
+            doc.db_set("processing_status", "Unconfigured")
+            doc.db_set("error_message", "Lead Doctype reference is not set properly in form with form_id {doc.form_id}")
+            return
         if not doc.ads or not doc.campaign:
             doc.db_set("processing_status", "Unconfigured")
             doc.db_set("error_message", "Ads and Campaign is not set in log doc")
