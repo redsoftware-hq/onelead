@@ -287,10 +287,13 @@ def process_logged_lead(doc, method):
       lead_data = fetch_lead_from_meta(doc.leadgen_id, meta_config)
 
       if lead_data:
+          # Log the data first  
+          doc.db_set("lead_payload", json.dumps(lead_data))
           # Map and create lead Entry
           lead_doc = create_lead_entry(lead_data, form_config, doc)
           doc.db_set("processing_status", "Processed")
           doc.db_set("lead_doc_reference", lead_doc.name)
+          doc.db_set("error_message", "")
       else:
           doc.db_set("processing_status", "Error")
           doc.db_set("error_message", "Failed to retrieve lead details from Meta API")
