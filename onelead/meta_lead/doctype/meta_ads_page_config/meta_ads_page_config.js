@@ -2,6 +2,17 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Meta Ads Page Config", {
+  setup: function (frm) {
+    frm.fields_dict['forms_list'].grid.get_field('meta_lead_form').get_query = function () {
+      let added_forms = frm.doc.forms_list.map(row => row.meta_lead_form).filter(f => f);
+      return {
+        filters: [
+          ['Meta Lead Form', 'name', 'not in', added_forms]
+        ]
+      };
+    };
+  },
+
   onload: function (frm) {
     // Hide or show Assignee fields based on the checkbox value
     frm.toggle_display('assignee_doctype', frm.doc.lead_assign);
@@ -104,6 +115,30 @@ frappe.ui.form.on("Meta Ads Page Config", {
           }
         });
       })
+    });
+
+
+    // Refresh query every time a row is added or removed
+    frm.fields_dict['forms_list'].grid.grid_events.on('add', function () {
+      frm.fields_dict['forms_list'].grid.get_field('meta_lead_form').get_query = function () {
+        let added_forms = frm.doc.forms_list.map(row => row.meta_lead_form).filter(f => f);
+        return {
+          filters: [
+            ['Meta Lead Form', 'name', 'not in', added_forms]
+          ]
+        };
+      };
+    });
+
+    frm.fields_dict['forms_list'].grid.grid_events.on('remove', function () {
+      frm.fields_dict['forms_list'].grid.get_field('meta_lead_form').get_query = function () {
+        let added_forms = frm.doc.forms_list.map(row => row.meta_lead_form).filter(f => f);
+        return {
+          filters: [
+            ['Meta Lead Form', 'name', 'not in', added_forms]
+          ]
+        };
+      };
     });
   }
 });
