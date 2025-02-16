@@ -189,11 +189,15 @@ def reconfigure_lead_log(doc):
             if form_doc.lead_doctype_reference:
                 doc.db_set("lead_doctype", form_doc.lead_doctype_reference)
             else:
-                doc.db_set("processing_status", "Unconfigured")
-                doc.db_set("error_message", "No lead_doctype_reference found in 'Meta Lead Form' for form_id: " + doc.form_id)
+                doc.db_set({
+                    "processing_status": "Unconfigured",
+                    "error_message": f"No lead_doctype_reference found in 'Meta Lead Form' for form_id: {doc.form_id}"
+                })
         else:
-            doc.db_set("processing_status", "Unconfigured")
-            doc.db_set("error_message", "No 'Meta Lead Form' found for form_id: " + doc.form_id)
+            doc.db_set({
+                "processing_status": "Unconfigured",
+                "error_message": f"No form found in `Meta Lead Form` for form_id: {doc.form_id}, please fetch forms again to get the latest forms."
+            })
 
         # If we found a matching config doc, set config_reference, campaign, etc.
         if config:
@@ -206,21 +210,20 @@ def reconfigure_lead_log(doc):
                 doc.db_set("campaign", config.campaign)
         else:
             # If no config is found, mark it as Unconfigured
-            doc.db_set("processing_status", "Unconfigured")
-            # Distinguish between "no config doc" vs "no forms_list match," if desired
-            doc.db_set("error_message", 
-                "No configuration found for page_id: {0} and form_id: {1} in '{2}'".format(
-                    doc.page_id, doc.form_id, doctype_name
-                )
-            )
+            doc.db_set({
+                "processing_status": "Unconfigured",
+                "error_message": f"No configuration found for page_id: {doc.page_id} and form_id: {doc.form_id} in '{doctype_name}'"
+            })
         
         # set the doc back to "Pending" to let the process_logged_lead handle it
         # doc.db_set("processing_status", "Pending")
 
     except Exception as e:
         frappe.logger().error(f"Error in reconfiguring lead log {doc.name}: {str(e)}", exc_info=True)
-        doc.db_set("processing_status", "Error")
-        doc.db_set("error_message", f"Error in reconfigure_lead_log: {str(e)}")
+        doc.db_set({
+            "processing_status": "Error",
+            "error_message": f"Error in reconfigure_lead_log: {str(e)}"
+        })
 
 def process_logged_lead(doc, method):
   """Process a lead after it's logged in Meta Webhook Lead Logs."""
@@ -252,25 +255,33 @@ def process_logged_lead(doc, method):
       meta_config = frappe.get_single("Meta Webhook Config")
       if meta_config.page_flow:
         if doc.config_not_enabled:
-          doc.db_set("processing_status", "Disabled")
-          doc.db_set("error_message", "Configuration can be found, but {doc.config_reference} is not Enabled")
+          doc.db_set({
+                "processing_status": "Disabled",
+                "error_message": f"Configuration can be found, but {doc.config_reference} is not Enabled"
+          })
           return
 
         # TODO: 1b. remove this condition, as it's already handled in reconfigure_lead_log, and create_lead_log.
         # Rquired last check, if form_config is not found, then exit.
         if not doc.config_reference:
-            doc.db_set("processing_status", "Unconfigured")
-            doc.db_set("error_message", "Configuration is not mapped properly, please make sure that form with form_id {doc.form_id} is mapped to a config of page {doc.page_id}")
+            doc.db_set({
+                "processing_status": "Unconfigured",
+                "error_message": f"Configuration is not mapped properly, please make sure that form with form_id {doc.form_id} is mapped to a config of page {doc.page_id}"
+            })
             return
         
         # This is required for adding Lead link to the log doc. so checks to make sure it exists.
         if not form_config.lead_doctype_reference:
-            doc.db_set("processing_status", "Unconfigured")
-            doc.db_set("error_message", "Lead Doctype reference is not set properly in form with form_id {doc.form_id}")
+            doc.db_set({
+                "processing_status": "Unconfigured",
+                "error_message": f"Lead Doctype reference is not set properly in form with form_id {doc.form_id}"
+            })
             return
         if not doc.ads or not doc.campaign:
-            doc.db_set("processing_status", "Unconfigured")
-            doc.db_set("error_message", "Ads and Campaign is not set in log doc")
+            doc.db_set({
+                "processing_status": "Unconfigured",
+                "error_message": "Ads and Campaign is not set in log doc"
+            })
             return
         # else:
         #     try:
@@ -291,19 +302,25 @@ def process_logged_lead(doc, method):
           doc.db_set("lead_payload", json.dumps(lead_data))
           # Map and create lead Entry
           lead_doc = create_lead_entry(lead_data, form_config, doc)
-          doc.db_set("processing_status", "Processed")
-          doc.db_set("lead_doc_reference", lead_doc.name)
-          doc.db_set("error_message", "")
+          doc.db_set({
+                "processing_status": "Processed",
+                "lead_doc_reference": lead_doc.name,
+                "error_message": ""
+          })
       else:
-          doc.db_set("processing_status", "Error")
-          doc.db_set("error_message", "Failed to retrieve lead details from Meta API")
+          doc.db_set({
+                "processing_status": "Error",
+                "error_message": "Failed to retrieve lead details from Meta API"
+          })
 
       if method == "manual":
           return {"status": "success", "message": "Lead processed successfully"}
 
   except Exception as e:
-      doc.db_set("processing_status", "Error")
-      doc.db_set("error_message", str(e))
+      doc.db_set({
+            "processing_status": "Error",
+            "error_message": str(e)
+      })
       frappe.logger().error(f"Error in processing lead for leadgen_id {doc.leadgen_id}: {str(e)}", exc_info=True)
       if method == "manual":
           return {"status": "error", "message": str(e)}
@@ -327,6 +344,9 @@ def fetch_lead_from_meta(leadgen_id, meta_config):
         FacebookAdsApi.init(app_id, app_secret, user_token)
 
         lead = Lead(leadgen_id).api_get()
+
+        # convert lead to dictionary/ json
+        lead = lead.export_all_data()
         
         return lead
 
