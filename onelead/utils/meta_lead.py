@@ -64,7 +64,7 @@ def leadgen():
         # check if  developemnt mode is enabled then skip signature verification
         if not frappe.conf.developer_mode:
             if not verify_signature(signature, json.dumps(data), app_secret):
-                frappe.logger().warning("Invalid signature. Payload verification failed.")
+                frappe.logger().error("Invalid signature. Payload verification failed.")
                 return Response("Invalid signature", status=403)
 
         # Log incoming payload
