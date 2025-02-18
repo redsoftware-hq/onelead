@@ -294,12 +294,16 @@ def process_logged_lead(doc, method):
         #         doc.db_set("error_message", f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
         #         return
 
-      # Use Meta SDK to fetch lead data
-      lead_data = fetch_lead_from_meta(doc.leadgen_id, meta_config)
-
-      if lead_data:
+      if not doc.lead_payload:
+        # Use Meta SDK to fetch lead data
+        lead_data = fetch_lead_from_meta(doc.leadgen_id, meta_config)
+        if lead_data:
           # Log the data first  
           doc.db_set("lead_payload", json.dumps(lead_data))
+      else:
+        lead_data = doc.lead_payload
+
+      if lead_data:
           # Map and create lead Entry
           lead_doc = create_lead_entry(lead_data, form_config, doc)
           doc.db_set({
@@ -443,3 +447,73 @@ def call_function_dynamically(func, value, *args):
     else:
         # Function expects more than two arguments
         return func(value, *args[:func_param_count - 1])
+
+
+
+import frappe
+from frappe.utils import now_datetime
+
+def poll_leads():
+    """Polling job to fetch leads from Meta Ads API"""
+    
+    config = frappe.get_single("Meta Webhook Config")
+    if not config.enable_polling:
+        return  # Exit if polling is disabled
+    
+    job_log = frappe.new_doc("Polling Summary Log")
+    job_log.job_start_time = now_datetime()
+    job_log.polling_interval_used = config.polling_interval
+
+    total_leads = 0
+    new_leads = 0
+    duplicates = 0
+    failed = 0
+    error_messages = []
+
+    try:
+        # Fetch only new leads (after last polling time)
+        last_poll_time = config.last_polling_time or "1970-01-01 00:00:00"
+        leads = fetch_leads_from_meta(last_poll_time)
+        
+        total_leads = len(leads)
+        
+        for lead in leads:
+            leadgen_id = lead.get("leadgen_id")
+            
+            if frappe.db.exists("Meta Webhook Lead Logs", {"leadgen_id": leadgen_id}):
+                duplicates += 1
+                continue  # Skip if duplicate
+            
+            try:
+                log_entry = frappe.new_doc("Meta Webhook Lead Logs")
+                log_entry.update({
+                    "leadgen_id": leadgen_id,
+                    "raw_payload": json.dumps(lead),
+                    "received_time": now_datetime(),
+                    "source": "Polling",
+                    "polling_summary_reference": job_log.name
+                })
+                log_entry.insert(ignore_permissions=True)
+                new_leads += 1
+            except Exception as e:
+                failed += 1
+                error_messages.append(str(e))
+        
+        job_log.new_leads_created = new_leads
+        job_log.duplicate_leads = duplicates
+        job_log.failed_leads = failed
+        job_log.total_leads_fetched = total_leads
+        job_log.error_messages = "\n".join(error_messages)
+        job_log.job_end_time = now_datetime()
+        
+        job_log.insert(ignore_permissions=True)
+        frappe.db.commit()
+
+        # Update last polling time
+        config.db_set("last_polling_time", now_datetime())
+        
+    except Exception as e:
+        job_log.error_messages = f"Polling failed: {str(e)}"
+        job_log.insert(ignore_permissions=True)
+        frappe.db.commit()
+        frappe.logger().error(f"Error in polling job: {str(e)}", exc_info=True)

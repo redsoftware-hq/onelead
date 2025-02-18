@@ -1,21 +1,23 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "creation": "2024-10-30 22:59:49.795808",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "webhook_data_section",
+  "lead_meta_data_section",
   "leadgen_id",
   "page_id",
   "ad_id",
   "form_id",
   "created_time",
   "received_time",
+  "source",
   "column_break_ufar",
   "processing_status",
-  "error_message",
   "config_not_enabled",
+  "error_message",
   "reference_section",
   "campaign",
   "config_reference",
@@ -32,14 +34,11 @@
  ],
  "fields": [
   {
-   "fieldname": "webhook_data_section",
-   "fieldtype": "Section Break",
-   "label": "Webhook Data"
-  },
-  {
    "fieldname": "leadgen_id",
    "fieldtype": "Data",
-   "label": "Leadgen ID"
+   "label": "Leadgen ID",
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "page_id",
@@ -50,6 +49,8 @@
   {
    "fieldname": "ad_id",
    "fieldtype": "Data",
+   "in_filter": 1,
+   "in_standard_filter": 1,
    "label": "Ad ID"
   },
   {
@@ -174,11 +175,23 @@
    "fieldtype": "Link",
    "label": "Ads",
    "options": "Meta Ads"
+  },
+  {
+   "fieldname": "lead_meta_data_section",
+   "fieldtype": "Section Break",
+   "label": "Lead Meta Data"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Import\nWebhook\nPolling"
   }
  ],
+ "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-13 00:41:30.631672",
+ "modified": "2025-02-18 13:34:59.950179",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Lead Logs",
