@@ -238,7 +238,7 @@ def process_logged_lead(doc, method):
           # Log the data first  
           doc.db_set("lead_payload", json.dumps(lead_data))
       else:
-        lead_data = doc.lead_payload
+        lead_data = json.loads(doc.lead_payload)
 
       
       # Retrieve the form configuration for the given form_id
