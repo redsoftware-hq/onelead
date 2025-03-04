@@ -229,6 +229,8 @@ def reconfigure_lead_log(doc):
 def process_logged_lead(doc, method):
   """Process a lead after it's logged in Meta Webhook Lead Logs."""
   try:
+      meta_config = frappe.get_single("Meta Webhook Config")
+
     #   FETCH LEAD DATA FROM META API
       lead_data = None
       if not doc.lead_payload:
@@ -265,7 +267,6 @@ def process_logged_lead(doc, method):
     #   if not doc.camapign:
           
       
-      meta_config = frappe.get_single("Meta Webhook Config")
       if meta_config.page_flow:
         if doc.config_not_enabled:
           doc.db_set({
