@@ -185,6 +185,7 @@ def reconfigure_lead_log(doc):
 
         if configured_form:
             form_doc = frappe.get_doc("Meta Lead Form", {"form_id": doc.form_id})
+            doc.db_set("lead_form", doc.form_id)
             # If the 'lead_doctype_reference' is defined in that Meta Lead Form
             if form_doc.lead_doctype_reference:
                 doc.db_set("lead_doctype", form_doc.lead_doctype_reference)
@@ -228,6 +229,18 @@ def reconfigure_lead_log(doc):
 def process_logged_lead(doc, method):
   """Process a lead after it's logged in Meta Webhook Lead Logs."""
   try:
+    #   FETCH LEAD DATA FROM META API
+      lead_data = None
+      if not doc.lead_payload:
+        # Use Meta SDK to fetch lead data
+        lead_data = fetch_lead_from_meta(doc.leadgen_id, meta_config)
+        if lead_data:
+          # Log the data first  
+          doc.db_set("lead_payload", json.dumps(lead_data))
+      else:
+        lead_data = doc.lead_payload
+
+      
       # Retrieve the form configuration for the given form_id
       form_config = frappe.get_doc("Meta Lead Form", {"form_id": doc.form_id})
 
@@ -237,13 +250,13 @@ def process_logged_lead(doc, method):
     #       doc.db_set("processing_status", "Unconfigured")
     #       doc.db_set("error_message", f"No form found in `Meta Lead Form` for form_id: {doc.form_id}, please fetch forms again to get the latest forms.")
     #       return
-      if not doc.campaign:
+      if not doc.campaign and doc.ad_id:
         campaign_id = ensure_campaign_exists(form_config)
         if campaign_id:
             doc.db_set("campaign", campaign_id)
 
       # Ensure ads exists and update doc.ads if necessary
-      if not doc.ads:
+      if not doc.ads and doc.ad_id:
         ads_id = ensure_ads_exists(form_config, doc, doc.ad_id)
         if ads_id:
             #   1a. remove form_config.campaign for M:M relationship
@@ -277,7 +290,7 @@ def process_logged_lead(doc, method):
                 "error_message": f"Lead Doctype reference is not set properly in form with form_id {doc.form_id}"
             })
             return
-        if not doc.ads or not doc.campaign:
+        if not doc.ads or not doc.campaign and doc.ad_id:
             doc.db_set({
                 "processing_status": "Unconfigured",
                 "error_message": "Ads and Campaign is not set in log doc"
@@ -293,15 +306,6 @@ def process_logged_lead(doc, method):
         #         doc.db_set("processing_status", "Disabled")
         #         doc.db_set("error_message", f"Error in setting campaign for leadgen_id {doc.leadgen_id}")
         #         return
-
-      if not doc.lead_payload:
-        # Use Meta SDK to fetch lead data
-        lead_data = fetch_lead_from_meta(doc.leadgen_id, meta_config)
-        if lead_data:
-          # Log the data first  
-          doc.db_set("lead_payload", json.dumps(lead_data))
-      else:
-        lead_data = doc.lead_payload
 
       if lead_data:
           # Map and create lead Entry
@@ -347,7 +351,7 @@ def fetch_lead_from_meta(leadgen_id, meta_config):
         # Initialize the Facebook API
         FacebookAdsApi.init(app_id, app_secret, user_token)
 
-        lead = Lead(leadgen_id).api_get()
+        lead = Lead(leadgen_id).api_get(fields=["ad_id", "campaign_id", "field_data", "form_id", "created_time", "is_organic", "platform", "post", "vehicle"])
 
         # convert lead to dictionary/ json
         lead = lead.export_all_data()

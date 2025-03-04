@@ -102,6 +102,7 @@ def create_lead_log(data, lead_data, global_conf):
         "received_time": now(),
         "leadgen_id": leadgen_id,
         "page_id": page_id,
+        "source": "Webhook",
         "ad_id": ad_id,
         "form_id": form_id,
         "Source": 'Webhook',
