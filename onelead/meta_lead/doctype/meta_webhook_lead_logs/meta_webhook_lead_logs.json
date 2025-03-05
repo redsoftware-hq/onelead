@@ -18,6 +18,8 @@
   "processing_status",
   "config_not_enabled",
   "error_message",
+  "platform",
+  "organic",
   "reference_section",
   "campaign",
   "config_reference",
@@ -186,12 +188,24 @@
    "fieldtype": "Select",
    "label": "Source",
    "options": "Import\nWebhook\nPolling"
+  },
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "label": "Platform",
+   "options": "\nFacebook\nInstagram"
+  },
+  {
+   "default": "0",
+   "fieldname": "organic",
+   "fieldtype": "Check",
+   "label": "Organic"
   }
  ],
  "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-18 13:34:59.950179",
+ "modified": "2025-03-06 00:03:22.825017",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Lead Logs",

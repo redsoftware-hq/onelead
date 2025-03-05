@@ -237,8 +237,12 @@ def process_logged_lead(doc, method):
         # Use Meta SDK to fetch lead data
         lead_data = fetch_lead_from_meta(doc.leadgen_id, meta_config)
         if lead_data:
-          # Log the data first  
-          doc.db_set("lead_payload", json.dumps(lead_data))
+          # Log the data first
+          doc.db_set({
+              "lead_data_payload": json.dumps(lead_data),
+              "organic": lead_data.get("is_organic", False),
+              "platform": 'Instagram' if lead_data.get("platform") == 'ig' else 'Facebook' if lead_data.get("platform") == 'fb' else '',
+          })
       else:
         lead_data = json.loads(doc.lead_payload)
 
