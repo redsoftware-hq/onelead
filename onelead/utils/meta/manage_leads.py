@@ -240,7 +240,7 @@ def process_logged_lead(doc, method):
         if lead_data:
           # Log the data first
           doc.db_set({
-              "lead_data_payload": json.dumps(lead_data),
+              "lead_payload": json.dumps(lead_data),
               "organic": lead_data.get("is_organic", False),
               "platform": 'Instagram' if lead_data.get("platform") == 'ig' else 'Facebook' if lead_data.get("platform") == 'fb' else '',
           })
