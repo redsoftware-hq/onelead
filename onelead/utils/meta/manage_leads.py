@@ -3,7 +3,8 @@ import json
 from datetime import datetime
 from facebook_business.api import FacebookAdsApi
 from facebook_business.adobjects.lead import Lead
-from . import formatting_functions
+# from .. import formatting_functions
+from ..formatting_functions import FORMATTING_FUNCTIONS
 from ..meta_lead import get_lead_config
 # from your_meta_sdk_module import MetaAdsAPI 
 
@@ -416,12 +417,19 @@ def create_lead_entry(lead_data, form_doc, log_doc):
             if mapping.formatting_function:
                 try:
                     # Split by comma to get function name and arguments
-                    func_name, *args = [arg.strip() for arg in mapping.formatting_function.split(',')]
-                    formatting_func = getattr(formatting_functions, func_name, None)
+                    func_name = mapping.formatting_function
+                    func_params = parse_function_parameters(mapping.function_parameters)
+                    # func_params = mapping.function_parameters.split(',') if mapping.function_parameters else []
+                    # func_name, *args = [arg.strip() for arg in mapping.formatting_function.split(',')]
+                    # formatting_func = getattr(formatting_functions, func_name, None)
                     
                     # Call the function with field_value and additional arguments
-                    if formatting_func:
-                        field_value = formatting_func(field_value, *args)
+                    # if formatting_func:
+                    #     field_value = formatting_func(field_value, *args)
+
+                    if func_name in FORMATTING_FUNCTIONS:
+                        formatting_func = FORMATTING_FUNCTIONS[func_name]
+                        field_value = formatting_func(field_value, *func_params)
                 except Exception as e:
                     frappe.logger().error(f"Error in formatting function '{mapping.formatting_function}' for {lead_field}: {str(e)}")
 
@@ -441,21 +449,41 @@ def create_lead_entry(lead_data, form_doc, log_doc):
         raise
     
 
-# Example setup for calling the function dynamically
-def call_function_dynamically(func, value, *args):
-    # Check the function's parameter count
-    func_param_count = func.__code__.co_argcount
+def parse_function_parameters(param_string):
+    if not param_string:
+        return []
 
-    # Call with only the required number of arguments
-    if func_param_count == 1:
-        # Function only expects one argument (e.g., value)
-        return func(value)
-    elif func_param_count == 2:
-        # Function expects two arguments (e.g., value, code)
-        return func(value, args[0] if args else None)
-    else:
-        # Function expects more than two arguments
-        return func(value, *args[:func_param_count - 1])
+    param_string = param_string.strip()
+
+    # Try JSON parsing first (for both objects & lists)
+    try:
+        parsed_data = json.loads(param_string)
+        if isinstance(parsed_data, dict):  # JSON Object (Key-Value)
+            return parsed_data
+        elif isinstance(parsed_data, list):  # JSON List (Array)
+            return parsed_data
+    except json.JSONDecodeError:
+        pass  # Not JSON, proceed with comma-separated parsing
+
+    # Fallback: Comma-Separated String
+    return [param.strip() for param in param_string.split(',') if param.strip()]
+
+
+# Example setup for calling the function dynamically
+# def call_function_dynamically(func, value, *args):
+#     # Check the function's parameter count
+#     func_param_count = func.__code__.co_argcount
+
+#     # Call with only the required number of arguments
+#     if func_param_count == 1:
+#         # Function only expects one argument (e.g., value)
+#         return func(value)
+#     elif func_param_count == 2:
+#         # Function expects two arguments (e.g., value, code)
+#         return func(value, args[0] if args else None)
+#     else:
+#         # Function expects more than two arguments
+#         return func(value, *args[:func_param_count - 1])
 
 
 

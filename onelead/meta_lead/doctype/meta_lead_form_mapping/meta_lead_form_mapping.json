@@ -9,7 +9,8 @@
   "meta_field",
   "lead_doctype_field",
   "default_value",
-  "formatting_function"
+  "formatting_function",
+  "function_parameters"
  ],
  "fields": [
   {
@@ -41,14 +42,19 @@
    "allow_in_quick_entry": 1,
    "description": "Add custom python function to process and format meta field value for Lead DOCTYPE entry.",
    "fieldname": "formatting_function",
-   "fieldtype": "Code",
+   "fieldtype": "Select",
    "label": "Formatting function"
+  },
+  {
+   "fieldname": "function_parameters",
+   "fieldtype": "Code",
+   "label": "Function Parameters"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-11-13 01:56:28.812630",
+ "modified": "2025-03-06 01:21:19.404169",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form Mapping",
