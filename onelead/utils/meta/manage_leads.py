@@ -315,7 +315,8 @@ def process_logged_lead(doc, method):
 
       if lead_data:
           # Map and create lead Entry
-          lead_doc = create_lead_entry(lead_data, form_config, doc)
+          user = meta_config.lead_creator
+          lead_doc = create_lead_entry(lead_data, form_config, doc, user)
           doc.db_set({
                 "processing_status": "Processed",
                 "lead_doc_reference": lead_doc.name,
@@ -394,7 +395,7 @@ def process_default_value(default_value, log_doc, form_doc):
         )
     return default_value
 
-def create_lead_entry(lead_data, form_doc, log_doc):
+def create_lead_entry(lead_data, form_doc, log_doc, user="Administrator"):
     """Create a new Lead record in Frappe based on Meta lead data and form configuration."""
     try:
         field_data = lead_data.get("field_data", [])
@@ -437,7 +438,7 @@ def create_lead_entry(lead_data, form_doc, log_doc):
             new_lead.set(lead_field, field_value)
 
         # Insert the new lead and commit to database
-        frappe.set_user("info@hairfreehairgrow.com")
+        frappe.set_user(user)
         res = new_lead.insert(ignore_permissions=True)
         frappe.db.commit()
         

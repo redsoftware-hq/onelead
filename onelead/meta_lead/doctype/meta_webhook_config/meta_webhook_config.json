@@ -13,12 +13,16 @@
   "app_name",
   "is_enabled",
   "page_flow",
+  "lead_creator",
   "column_break_blmf",
   "user_access_token",
   "user_id",
   "token_expiry",
   "is_token_valid",
-  "connect_facebook"
+  "connect_facebook",
+  "enable_polling",
+  "polling_interval",
+  "last_polling_time"
  ],
  "fields": [
   {
@@ -98,6 +102,33 @@
    "fieldtype": "Check",
    "label": "Is Token Valid",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_polling",
+   "fieldtype": "Check",
+   "label": "Enable Polling"
+  },
+  {
+   "depends_on": "eval:doc.enable_polling",
+   "description": "Input time in Hours. e.g. 3",
+   "fieldname": "polling_interval",
+   "fieldtype": "Int",
+   "label": "Polling Interval"
+  },
+  {
+   "fieldname": "last_polling_time",
+   "fieldtype": "Datetime",
+   "label": "Last Polling Time",
+   "read_only": 1
+  },
+  {
+   "default": "Administrator",
+   "description": "All leads will be created via this user, ensure user has lead access.",
+   "fieldname": "lead_creator",
+   "fieldtype": "Link",
+   "label": "Lead creator",
+   "options": "User"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -108,7 +139,7 @@
    "link_fieldname": "page"
   }
  ],
- "modified": "2024-11-16 01:11:29.074410",
+ "modified": "2025-03-08 02:01:59.656838",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Config",
