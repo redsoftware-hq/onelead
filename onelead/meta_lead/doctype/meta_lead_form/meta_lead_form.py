@@ -26,6 +26,7 @@ class MetaLeadForm(Document):
         After insert, if `assign_to` or `assignee_doctype` are changed and a campaign is linked,
         update the linked campaign with the new values.
         """
+        # TODO: 1a - 1c: Remove the logic in light of the new M:M relationship between `Meta Lead Form` and `Meta Campaign` 
         if self.campaign:
             # Fetch the linked campaign
             campaign = frappe.get_doc("Meta Campaign", self.campaign)

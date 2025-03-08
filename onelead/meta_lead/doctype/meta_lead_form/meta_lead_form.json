@@ -51,6 +51,7 @@
   {
    "fieldname": "ads",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Ads",
    "options": "Meta Ads"
   },
@@ -157,7 +158,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-28 18:42:11.538615",
+ "modified": "2025-02-12 23:34:35.747040",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Lead Form",

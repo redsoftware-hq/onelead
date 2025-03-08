@@ -60,7 +60,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-19 22:52:01.322993",
+ "modified": "2025-02-18 13:33:48.990232",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Ads",
@@ -80,6 +80,7 @@
    "write": 1
   }
  ],
+ "search_fields": "ads_name, campaign",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
