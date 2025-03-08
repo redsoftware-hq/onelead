@@ -1,0 +1,137 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-12-01 21:07:34.980441",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "leadgen_id",
+  "campaign_id",
+  "ad_id",
+  "form_id",
+  "gcl_id",
+  "received_time",
+  "is_test",
+  "column_break_nxja",
+  "processing_status",
+  "error_message",
+  "section_break_byae",
+  "campaign",
+  "column_break_gdqv",
+  "lead_doc_reference",
+  "lead_doctype",
+  "section_break_whor",
+  "raw_payload"
+ ],
+ "fields": [
+  {
+   "fieldname": "leadgen_id",
+   "fieldtype": "Data",
+   "label": "Leadgen ID"
+  },
+  {
+   "fieldname": "campaign_id",
+   "fieldtype": "Data",
+   "label": "Campaign ID"
+  },
+  {
+   "fieldname": "received_time",
+   "fieldtype": "Datetime",
+   "label": "Received Time"
+  },
+  {
+   "fieldname": "gcl_id",
+   "fieldtype": "Data",
+   "label": "GCL ID"
+  },
+  {
+   "fieldname": "column_break_nxja",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "processing_status",
+   "fieldtype": "Select",
+   "label": "Processing Status",
+   "options": "Pending\nUnconfigured\nProcessed\nError"
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Text",
+   "label": "Error Message"
+  },
+  {
+   "fieldname": "form_id",
+   "fieldtype": "Data",
+   "label": "Form ID"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_test",
+   "fieldtype": "Check",
+   "label": "Is Test"
+  },
+  {
+   "fieldname": "ad_id",
+   "fieldtype": "Data",
+   "label": "Ad ID"
+  },
+  {
+   "fieldname": "section_break_whor",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "raw_payload",
+   "fieldtype": "Code",
+   "label": "Raw Payload"
+  },
+  {
+   "fieldname": "section_break_byae",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Date",
+   "label": "Campaign"
+  },
+  {
+   "fieldname": "column_break_gdqv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lead_doc_reference",
+   "fieldtype": "Dynamic Link",
+   "label": "Lead Doc Reference",
+   "options": "lead_doctype"
+  },
+  {
+   "fieldname": "lead_doctype",
+   "fieldtype": "Link",
+   "label": "Lead DocType",
+   "options": "DocType"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-01 21:24:44.460971",
+ "modified_by": "Administrator",
+ "module": "Google Lead",
+ "name": "Google Webhook Lead Logs",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

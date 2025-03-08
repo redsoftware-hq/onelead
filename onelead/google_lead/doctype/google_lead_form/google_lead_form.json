@@ -1,0 +1,66 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-12-01 20:59:43.078880",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "form_id",
+  "campaign",
+  "form_name",
+  "form_mapping_section",
+  "mapping"
+ ],
+ "fields": [
+  {
+   "fieldname": "form_id",
+   "fieldtype": "Data",
+   "label": "Form Id"
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Data",
+   "label": "Campaign"
+  },
+  {
+   "fieldname": "form_name",
+   "fieldtype": "Data",
+   "label": "Form Name"
+  },
+  {
+   "fieldname": "form_mapping_section",
+   "fieldtype": "Section Break",
+   "label": " Form Mapping "
+  },
+  {
+   "fieldname": "mapping",
+   "fieldtype": "Table",
+   "label": "Mapping",
+   "options": "Meta Lead Form Mapping"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-01 21:02:49.002771",
+ "modified_by": "Administrator",
+ "module": "Google Lead",
+ "name": "Google Lead Form",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
