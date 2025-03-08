@@ -1,0 +1,152 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-02-17 22:36:27.193967",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "job_details_section",
+  "job_start_time",
+  "polling_interval_used",
+  "polling_execution_time",
+  "column_break_zzig",
+  "job_end_time",
+  "polling_status",
+  "trigger_source",
+  "lead_details_section",
+  "column_break_whcu",
+  "total_lead_fetched",
+  "new_leads_created",
+  "duplicate_leads",
+  "failed_leads",
+  "column_break_ityk",
+  "error_count",
+  "error_messages",
+  "form_details_section",
+  "form_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "job_details_section",
+   "fieldtype": "Section Break",
+   "label": "Job Details"
+  },
+  {
+   "fieldname": "job_start_time",
+   "fieldtype": "Datetime",
+   "label": "Job Start Time"
+  },
+  {
+   "fieldname": "job_end_time",
+   "fieldtype": "Datetime",
+   "label": "Job End Time"
+  },
+  {
+   "fieldname": "column_break_zzig",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "polling_status",
+   "fieldtype": "Select",
+   "label": "Polling Status",
+   "options": "\nSuccess\nPartial Success\nFailed"
+  },
+  {
+   "fieldname": "lead_details_section",
+   "fieldtype": "Section Break",
+   "label": "Lead Details"
+  },
+  {
+   "fieldname": "column_break_whcu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_lead_fetched",
+   "fieldtype": "Int",
+   "label": "Total Lead Fetched"
+  },
+  {
+   "description": "Leads that were added to the system",
+   "fieldname": "new_leads_created",
+   "fieldtype": "Int",
+   "label": "New Leads Created"
+  },
+  {
+   "description": "Leads that already existed",
+   "fieldname": "duplicate_leads",
+   "fieldtype": "Int",
+   "label": "Duplicate Leads"
+  },
+  {
+   "fieldname": "column_break_ityk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "failed_leads",
+   "fieldname": "failed_leads",
+   "fieldtype": "Int",
+   "label": "Failed Leads"
+  },
+  {
+   "fieldname": "error_count",
+   "fieldtype": "Int",
+   "label": "Error Count"
+  },
+  {
+   "fieldname": "error_messages",
+   "fieldtype": "Long Text",
+   "label": "Error Messages"
+  },
+  {
+   "fieldname": "polling_interval_used",
+   "fieldtype": "Int",
+   "label": "Polling Interval Used"
+  },
+  {
+   "fieldname": "form_details_section",
+   "fieldtype": "Section Break",
+   "label": "Form Details"
+  },
+  {
+   "fieldname": "polling_execution_time",
+   "fieldtype": "Duration",
+   "label": "Polling Execution Time"
+  },
+  {
+   "fieldname": "trigger_source",
+   "fieldtype": "Select",
+   "label": "Trigger Source",
+   "options": "Scheduled Cron Job\nManual Trigger"
+  },
+  {
+   "fieldname": "form_details",
+   "fieldtype": "Table",
+   "label": "Form Details",
+   "options": "Polling Summary Form Log"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-02-17 23:56:50.966800",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Polling Summary Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

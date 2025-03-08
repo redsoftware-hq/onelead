@@ -1,0 +1,65 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-02-17 22:46:19.946598",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "lead_form",
+  "leads_fetched",
+  "new_leads_created",
+  "duplicate_leads",
+  "failed_leads"
+ ],
+ "fields": [
+  {
+   "fieldname": "lead_form",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Lead Form",
+   "options": "Meta Lead Form",
+   "reqd": 1
+  },
+  {
+   "fieldname": "leads_fetched",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Leads Fetched",
+   "width": "1"
+  },
+  {
+   "fieldname": "new_leads_created",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "New Leads Created",
+   "width": "1"
+  },
+  {
+   "fieldname": "duplicate_leads",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Duplicate Leads",
+   "width": "1"
+  },
+  {
+   "fieldname": "failed_leads",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Failed Leads",
+   "width": "1"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-02-17 23:41:23.398326",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Polling Summary Form Log",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
