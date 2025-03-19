@@ -1,0 +1,44 @@
+{
+ "cards": [
+  {
+   "card": "Today's Leads"
+  },
+  {
+   "card": "Today's Error Leads"
+  },
+  {
+   "card": "Today's Unconfigured Leads"
+  },
+  {
+   "card": "Lead Conversion"
+  },
+  {
+   "card": "Total Unconfigured Leads"
+  },
+  {
+   "card": "Total Leads"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Monthly Leads Chart",
+   "width": "Half"
+  },
+  {
+   "chart": "Ad Performance Chart",
+   "width": "Half"
+  }
+ ],
+ "creation": "2025-03-13 12:13:02.149255",
+ "dashboard_name": "Leads Overview",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2025-03-17 16:40:00.737107",
+ "modified_by": "Administrator",
+ "module": "One Lead",
+ "name": "Leads Overview",
+ "owner": "Administrator"
+}

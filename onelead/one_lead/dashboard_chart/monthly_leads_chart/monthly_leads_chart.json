@@ -1,0 +1,38 @@
+{
+ "based_on": "received_time",
+ "chart_name": "Monthly Leads Chart",
+ "chart_type": "Count",
+ "color": "#449CF0",
+ "creation": "2025-03-13 12:12:07.436059",
+ "currency": "INR",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "document_type": "Meta Webhook Lead Logs",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[]",
+ "group_by_type": "Count",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "last_synced_on": "2025-03-13 14:44:51.286880",
+ "modified": "2025-03-13 14:50:23.441853",
+ "modified_by": "Administrator",
+ "module": "One Lead",
+ "name": "Monthly Leads Chart",
+ "number_of_groups": 0,
+ "owner": "Administrator",
+ "parent_document_type": "",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "source": "",
+ "time_interval": "Monthly",
+ "timeseries": 1,
+ "timespan": "Last Quarter",
+ "type": "Bar",
+ "use_report_chart": 0,
+ "value_based_on": "",
+ "y_axis": []
+}

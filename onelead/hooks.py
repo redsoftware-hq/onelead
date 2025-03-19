@@ -34,6 +34,8 @@ doc_events = {
 # ------------------
 
 app_include_css = "/assets/onelead/css/meta.css"
+app_include_js = "/assets/onelead/js/dashboard_override.js"
+
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/onelead/css/onelead.css"
