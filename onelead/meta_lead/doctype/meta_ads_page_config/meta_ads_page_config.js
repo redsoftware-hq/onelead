@@ -7,7 +7,8 @@ frappe.ui.form.on("Meta Ads Page Config", {
       let added_forms = frm.doc.forms_list.map(row => row.meta_lead_form).filter(f => f);
       return {
         filters: [
-          ['Meta Lead Form', 'name', 'not in', added_forms]
+          ['Meta Lead Form', 'name', 'not in', added_forms],
+          ['Meta Lead Form', 'page', '==', frm.doc.page]
         ]
       };
     };

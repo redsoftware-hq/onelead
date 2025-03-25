@@ -22,7 +22,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-01 16:21:28.321954",
+ "modified": "2025-03-25 17:20:12.502123",
  "modified_by": "Administrator",
  "module": "Google Lead",
  "name": "Google Lead Logs",
@@ -37,6 +37,18 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "One Lead Manager",
    "share": 1,
    "write": 1
   }

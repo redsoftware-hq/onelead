@@ -139,7 +139,7 @@
    "link_fieldname": "page"
   }
  ],
- "modified": "2025-03-08 02:01:59.656838",
+ "modified": "2025-03-25 17:17:27.676122",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Config",
@@ -152,6 +152,16 @@
    "print": 1,
    "read": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "One Lead Manager",
    "share": 1,
    "write": 1
   }

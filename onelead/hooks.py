@@ -94,7 +94,7 @@ app_include_css = "/assets/onelead/css/meta.css"
 # ------------
 
 # before_install = "onelead.install.before_install"
-# after_install = "onelead.install.after_install"
+after_install = "onelead.install.after_install"
 
 # Uninstallation
 # ------------
