@@ -27,6 +27,10 @@
   {
    "chart": "Ad Performance Chart",
    "width": "Half"
+  },
+  {
+   "chart": "Leads Per Ads",
+   "width": "Full"
   }
  ],
  "creation": "2025-03-13 12:13:02.149255",
@@ -36,7 +40,7 @@
  "idx": 0,
  "is_default": 0,
  "is_standard": 1,
- "modified": "2025-03-17 16:40:00.737107",
+ "modified": "2025-03-25 12:24:33.628113",
  "modified_by": "Administrator",
  "module": "One Lead",
  "name": "Leads Overview",
