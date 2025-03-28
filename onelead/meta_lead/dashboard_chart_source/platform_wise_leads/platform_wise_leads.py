@@ -64,7 +64,7 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
 
     for row in raw_data:
         period = row["period"]
-        platform = row["platform"]
+        platform = row["platform"] or "Other"
         count = row["count"]
         label = str(period)
 
@@ -103,6 +103,7 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
         elif time_interval == "Yearly":
             label = str(period) 
 
+        # period_map[label][platform] += count
         period_map[label][platform] = count
         label_map[period] = label
 
@@ -121,7 +122,13 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
     labels = [label_map[period] for period in sorted_periods]
     instagram_data = [period_map[l]["Instagram"] for l in labels]
     facebook_data = [period_map[l]["Facebook"] for l in labels]
-    all_data = [period_map[l]["Instagram"] + period_map[l]["Facebook"] for l in labels]
+    other_data = [period_map[l].get("Other", 0) for l in labels]  # Initially platform field was not present for that Other is added in charts.
+    all_data = [
+        period_map[l].get("Instagram", 0) +
+        period_map[l].get("Facebook", 0) +
+        period_map[l].get("Other", 0)
+        for l in labels
+    ]
 
     return {
         "labels": labels,
