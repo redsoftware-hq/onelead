@@ -13,3 +13,5 @@ frappe.query_reports["Leads Chart"] = {
         },
     ],
 };
+
+
