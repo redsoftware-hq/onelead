@@ -1,0 +1,13 @@
+{
+ "creation": "2025-03-29 00:20:02.047973",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart Source",
+ "idx": 0,
+ "modified": "2025-03-29 00:20:02.047973",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Ad Performance Chart",
+ "owner": "Administrator",
+ "source_name": "Ad Performance Chart",
+ "timeseries": 0
+}

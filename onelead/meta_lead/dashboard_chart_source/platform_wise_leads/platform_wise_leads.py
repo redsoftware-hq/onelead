@@ -106,7 +106,19 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
         period_map[label][platform] = count
         label_map[period] = label
 
-    labels = sorted(period_map.keys())
+    # Sort based on the actual period keys
+    if time_interval == "Monthly":
+        sorted_periods = sorted(label_map.keys(), key=lambda x: datetime.datetime.strptime(x, "%Y-%m"))
+    elif time_interval == "Daily":
+        sorted_periods = sorted(label_map.keys(), key=lambda x: getdate(str(x)))
+    elif time_interval == "Weekly":
+        sorted_periods = sorted(label_map.keys(), key=lambda x: int(x))  # YEARWEEK is integer
+    else:
+        sorted_periods = sorted(label_map.keys())
+
+
+    # labels = sorted(period_map.keys())
+    labels = [label_map[period] for period in sorted_periods]
     instagram_data = [period_map[l]["Instagram"] for l in labels]
     facebook_data = [period_map[l]["Facebook"] for l in labels]
     all_data = [period_map[l]["Instagram"] + period_map[l]["Facebook"] for l in labels]
@@ -116,7 +128,7 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
         "datasets": [
             {"name": "Instagram", "values": instagram_data, "chartType": 'bar' },
             {"name": "Facebook", "values": facebook_data, "chartType": 'bar'},
-            {"name": "Total", "values": all_data, "chartType": 'bar', "isVisible": 0},
+            {"name": "Total", "values": all_data, "chartType": 'bar'},
         ],
         "type": "bar",
         
