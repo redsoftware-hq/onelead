@@ -8,7 +8,7 @@ frappe.ui.form.on("Meta Ads Page Config", {
       return {
         filters: [
           ['Meta Lead Form', 'name', 'not in', added_forms],
-          ['Meta Lead Form', 'page', '==', frm.doc.page]
+          ['Meta Lead Form', 'page', '=', frm.doc.page]
         ]
       };
     };
@@ -212,9 +212,9 @@ frappe.ui.form.on("Meta Campaign Form List", {
                                 .map(field => field.fieldname);
     
                               // Get mandatory fields
-                              // mandatory_fields = r.message.fields
-                              //   .filter(field => field.reqd)
-                              //   .map(field => field.fieldname);
+                              mandatory_fields = r.message.fields
+                                .filter(field => field.reqd)
+                                .map(field => field.fieldname);
     
                               // Update lead_doctype_field options in the mapping table
                               d.fields_dict.mapping.grid.update_docfield_property(

@@ -1,0 +1,13 @@
+{
+ "creation": "2025-03-28 15:57:49.817676",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart Source",
+ "idx": 0,
+ "modified": "2025-03-28 15:57:49.817676",
+ "modified_by": "Administrator",
+ "module": "Meta Lead",
+ "name": "Platform wise Leads",
+ "owner": "Administrator",
+ "source_name": "Platform wise Leads",
+ "timeseries": 1
+}

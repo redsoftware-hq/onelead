@@ -1,0 +1,62 @@
+{
+ "charts": [
+  {
+   "chart_name": "Platform Wise Leads",
+   "label": "Platform Wise Leads"
+  },
+  {
+   "chart_name": "Ads Performance",
+   "label": "Ads Performance"
+  }
+ ],
+ "content": "[{\"id\":\"r6kEgzQnw-\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">One Lead</span>\",\"col\":12}},{\"id\":\"szT1whjHLF\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Meta Leads <br></b></span>\",\"col\":12}},{\"id\":\"UZF9PQyKMP\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Leads\",\"col\":3}},{\"id\":\"Q3npkTslUL\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Unconfigured Lead Logs\",\"col\":3}},{\"id\":\"VtZ07NFGM3\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Error Lead Logs\",\"col\":3}},{\"id\":\"rtk2AckUmt\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Lead Conversion\",\"col\":3}},{\"id\":\"E6UxCS_OXZ\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Platform Wise Leads\",\"col\":12}},{\"id\":\"7WLDv3jfZz\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Ads Performance\",\"col\":12}}]",
+ "creation": "2025-03-28 14:38:29.705513",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "filter",
+ "idx": 0,
+ "indicator_color": "yellow",
+ "is_hidden": 0,
+ "label": "One Lead",
+ "links": [],
+ "modified": "2025-03-28 23:27:45.611663",
+ "modified_by": "Administrator",
+ "module": "One Lead",
+ "name": "One Lead",
+ "number_cards": [
+  {
+   "label": "Total Leads",
+   "number_card_name": "Total Leads"
+  },
+  {
+   "label": "Unconfigured Lead Logs",
+   "number_card_name": "Total Unconfigured Leads"
+  },
+  {
+   "label": "Error Lead Logs",
+   "number_card_name": "Total Error Leads"
+  },
+  {
+   "label": "Lead Conversion",
+   "number_card_name": "Lead Conversion"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "One Lead Manager"
+  }
+ ],
+ "sequence_id": 10.0,
+ "shortcuts": [],
+ "title": "One Lead"
+}
