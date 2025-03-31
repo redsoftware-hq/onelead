@@ -9,7 +9,7 @@
    "label": "Ads Performance"
   }
  ],
- "content": "[{\"id\":\"r6kEgzQnw-\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">One Lead</span>\",\"col\":12}},{\"id\":\"szT1whjHLF\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Meta Leads <br></b></span>\",\"col\":12}},{\"id\":\"UZF9PQyKMP\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Leads\",\"col\":3}},{\"id\":\"Q3npkTslUL\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Unconfigured Lead Logs\",\"col\":3}},{\"id\":\"OIjufLU2pZ\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Loss Leads\",\"col\":3}},{\"id\":\"yl94O2Uda1\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Error Leads\",\"col\":3}},{\"id\":\"rtk2AckUmt\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Lead Conversion\",\"col\":3}},{\"id\":\"E6UxCS_OXZ\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Platform Wise Leads\",\"col\":12}},{\"id\":\"VKdY7ltqlF\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Ads Performance\",\"col\":12}}]",
+ "content": "[{\"id\":\"r6kEgzQnw-\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">One Lead</span>\",\"col\":12}},{\"id\":\"szT1whjHLF\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Meta Leads <br></b></span>\",\"col\":12}},{\"id\":\"UZF9PQyKMP\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Processed Leads\",\"col\":3}},{\"id\":\"Q3npkTslUL\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Unconfigured Lead Logs\",\"col\":3}},{\"id\":\"OIjufLU2pZ\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Loss Leads\",\"col\":3}},{\"id\":\"yl94O2Uda1\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Error Leads\",\"col\":3}},{\"id\":\"rtk2AckUmt\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Lead Conversion\",\"col\":3}},{\"id\":\"E6UxCS_OXZ\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Platform Wise Leads\",\"col\":12}},{\"id\":\"VKdY7ltqlF\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Ads Performance\",\"col\":12}}]",
  "creation": "2025-03-28 14:38:29.705513",
  "custom_blocks": [],
  "docstatus": 0,
@@ -22,14 +22,14 @@
  "is_hidden": 0,
  "label": "One Lead",
  "links": [],
- "modified": "2025-03-31 18:49:31.018478",
+ "modified": "2025-03-31 19:06:47.720109",
  "modified_by": "Administrator",
  "module": "One Lead",
  "name": "One Lead",
  "number_cards": [
   {
-   "label": "Total Leads",
-   "number_card_name": "OneLead Total Leads"
+   "label": "Total Processed Leads",
+   "number_card_name": "onelead total lead"
   },
   {
    "label": "Loss Leads",
