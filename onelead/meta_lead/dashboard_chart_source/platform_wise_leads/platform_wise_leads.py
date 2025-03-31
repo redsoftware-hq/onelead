@@ -103,8 +103,8 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
         elif time_interval == "Yearly":
             label = str(period) 
 
-        # period_map[label][platform] += count
-        period_map[label][platform] = count
+        period_map[label][platform] += count
+        # period_map[label][platform] = count
         label_map[period] = label
 
     # Sort based on the actual period keys
@@ -123,11 +123,9 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
     instagram_data = [period_map[l]["Instagram"] for l in labels]
     facebook_data = [period_map[l]["Facebook"] for l in labels]
     other_data = [period_map[l].get("Other", 0) for l in labels]  # Initially platform field was not present for that Other is added in charts.
-    all_data = [
-        period_map[l].get("Instagram", 0) +
-        period_map[l].get("Facebook", 0) +
-        period_map[l].get("Other", 0)
-        for l in labels
+    total_data = [
+        instagram_data[i] + facebook_data[i] + other_data[i]
+        for i in range(len(labels))
     ]
 
     return {
@@ -135,11 +133,16 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
         "datasets": [
             {"name": "Instagram", "values": instagram_data, "chartType": 'bar' },
             {"name": "Facebook", "values": facebook_data, "chartType": 'bar'},
-            {"name": "Total", "values": all_data, "chartType": 'bar'},
+            {"name": "Total", "values": total_data, "chartType": 'line'},
         ],
-        "type": "bar",
-        
+        "type": "axis-mixed",
+        "height": 300,
+        "colors": ["#ffeb3b", "#ee82ee", "#90caf9"],
+        "axisOptions": {
+            "xAxisMode": "tick",
+            "xIsSeries": True
+        },
         "colors": ['#ffeb3b','#ee82ee'],
         "valuesOverPoints": 0,
-        "barOptions": {"stacked": 1, "spaceRatio": 0.5 }
+        "barOptions": {"stacked": True, "spaceRatio": 0.5 },
     }

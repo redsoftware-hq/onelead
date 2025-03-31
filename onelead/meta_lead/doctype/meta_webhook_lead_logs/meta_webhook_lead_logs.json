@@ -85,7 +85,7 @@
    "in_preview": 1,
    "in_standard_filter": 1,
    "label": "Processing Status",
-   "options": "Pending\nUnconfigured\nDisabled\nProcessed\nError"
+   "options": "Pending\nUnconfigured\nDisabled\nProcessed\nError\nLoss"
   },
   {
    "fieldname": "error_message",
@@ -205,7 +205,7 @@
  "hide_toolbar": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-25 17:19:25.788792",
+ "modified": "2025-03-31 18:17:18.215420",
  "modified_by": "Administrator",
  "module": "Meta Lead",
  "name": "Meta Webhook Lead Logs",

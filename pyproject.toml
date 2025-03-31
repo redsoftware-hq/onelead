@@ -1,7 +1,7 @@
 [project]
 name = "onelead"
 authors = [
-    { name = "Redsoftware Solutions", email = "dev@redsoftware.in"}
+    { name = "Redsoft ERP", email = "dev@redsoftware.in"}
 ]
 description = "One app for featching all Ad Form Leads"
 requires-python = ">=3.10"
