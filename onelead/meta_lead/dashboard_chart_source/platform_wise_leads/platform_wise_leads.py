@@ -55,7 +55,7 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
         ORDER BY period ASC
     """, (status_filter, from_date, to_date), as_dict=True)
 
-    period_map = defaultdict(lambda: {"Instagram": 0, "Facebook": 0})
+    period_map = defaultdict(lambda: {"Instagram": 0, "Facebook": 0, "Other": 0})
     label_map = {}
 
     print(filters)
@@ -104,7 +104,6 @@ def get(chart_name=None, chart=None, no_cache=None, filters=None,
             label = str(period) 
 
         period_map[label][platform] += count
-        # period_map[label][platform] = count
         label_map[period] = label
 
     # Sort based on the actual period keys
