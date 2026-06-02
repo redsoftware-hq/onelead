@@ -1,5 +1,17 @@
 import frappe
-from frappe.utils.background_jobs import get_jobs
+
+def _get_jobs(site, queue):
+    try:
+        from frappe.utils.background_jobs import get_jobs
+        return get_jobs(site=site, queue=queue)
+    except ImportError:
+        # Frappe v16: job introspection via RQ Job doctype
+        jobs = frappe.get_all(
+            "RQ Job",
+            filters={"status": ["in", ["queued", "started"]]},
+            fields=["job_id"],
+        )
+        return {site: [j.job_id for j in jobs]}
 
 @frappe.whitelist()
 def check_jobs_running():
@@ -8,16 +20,12 @@ def check_jobs_running():
     Returns True if any such job is found; otherwise, returns False.
     """
     job_found = False
-    queued_jobs = get_jobs(site=frappe.local.site, queue="long")
+    queued_jobs = _get_jobs(site=frappe.local.site, queue="long")
 
-    print(queued_jobs.items())
-
-    # Iterate through queued jobs in the "default" queue
     for job in queued_jobs.get(frappe.local.site, []):
         if "page_flow_fetch_page_and_campaign" in job:
-            # if job_info.get("status") in ["queued", "started"]:
             job_found = True
-            break  # Exit loop as soon as we find a matching job
+            break
 
     return job_found
 

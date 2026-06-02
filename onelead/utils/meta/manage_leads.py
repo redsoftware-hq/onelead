@@ -39,7 +39,6 @@ def ensure_campaign_exists(form_doc):
         })
         
         new_campaign.insert(ignore_permissions=True)
-        frappe.db.commit()
 
         return new_campaign.name  # Return new campaign ID
 
@@ -100,7 +99,6 @@ def ensure_ads_exists(form_doc, doc, ads_id=None):
         })
 
         new_ads.insert(ignore_permissions=True)
-        frappe.db.commit()
 
         return new_ads.name  # Return new Ads ID
 
@@ -440,8 +438,7 @@ def create_lead_entry(lead_data, form_doc, log_doc, user="Administrator"):
         # Insert the new lead and commit to database
         frappe.set_user(user)
         res = new_lead.insert(ignore_permissions=True)
-        frappe.db.commit()
-        
+
         frappe.logger().info(f"Lead created successfully with name: {new_lead.name}")
         return new_lead
 

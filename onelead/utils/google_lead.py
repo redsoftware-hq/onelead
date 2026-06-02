@@ -16,7 +16,7 @@ def webhook():
 
 def handle_lead():
   # data = frappe.local.form_dict
-  data = frappe.request.json
+  data = frappe.request.get_json()
   frappe.get_doc({
     "doctype": "Google Lead Logs",
     "json": json.dumps(data)

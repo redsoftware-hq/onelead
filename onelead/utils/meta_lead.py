@@ -52,7 +52,7 @@ def verify_signature(signature, payload, secret):
 def leadgen():
     """ Process lead data from Meta Ads webhook """
     try:
-        data = frappe.request.json
+        data = frappe.request.get_json()
         frappe.logger().info(f"Received POST request body: {json.dumps(data)}")
 
         # Validate payload with app secret
